@@ -1,4 +1,3 @@
-?node rdf:type saref:Meter .
 ?node saref:makesMeasurement ?measurement .
 ?measurement rdf:type saref:Measurement .
 ?measurement saref:relatesToProperty ?property .

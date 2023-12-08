@@ -29,6 +29,6 @@ public class MeterPostInteraction extends ServiceInteraction<MeterService> {
         if (!serviceAdapter.graphPattern.validateBinding(bindingValue)) {
             throw new GenericAdapterException("Invalid binding to graph pattern: " + bindingValue);
         }
-        postKnowledgeInteractionBinding(bindingValue.toList());
+        postKnowledgeInteractionBinding(bindingValue.toSet());
     }
 }

@@ -23,7 +23,7 @@ package org.esg.ic.ssa;
 import java.util.List;
 
 import org.esg.ic.ssa.api.Binding;
-import org.esg.ic.ssa.api.StartHandle;
+import org.esg.ic.ssa.api.BindingSet;
 import org.esg.ic.ssa.api.knowledge.KnowledgeInteraction;
 
 public abstract class ServiceInteraction<S extends ServiceAdapter> {
@@ -60,17 +60,19 @@ public abstract class ServiceInteraction<S extends ServiceAdapter> {
     	return serviceAdapter.postKnowledgeInteractionBinding(knowledgeInteractionId, bindingSet);
     }
 
-    protected StartHandle reactKnowledgeInteractionBinding() throws GenericAdapterException {
-        return serviceAdapter.reactKnowledgeInteractionBinding();
+    protected <B extends Binding> BindingSet<B> reactKnowledgeInteractionBinding(List<B> bindingSet,
+    		Class<B> bindingType) throws GenericAdapterException {
+        return serviceAdapter.reactKnowledgeInteractionBinding(knowledgeInteractionId, bindingSet, bindingType);
     }
 
-    protected <B extends Binding> List<B> askKnowledgeInteractionBinding(List<Binding> bindingSet,
+    protected <B extends Binding> BindingSet<B> askKnowledgeInteractionBinding(List<B> bindingSet,
     		Class<B> resultType) throws GenericAdapterException {
     	return serviceAdapter.askKnowledgeInteractionBinding(knowledgeInteractionId, bindingSet, resultType);
     }
 
-    protected StartHandle answerKnowledgeInteractionBinding() throws GenericAdapterException {
-        return serviceAdapter.answerKnowledgeInteractionBinding();
+    protected <B extends Binding> void answerKnowledgeInteractionBinding(List<B> bindingSet, 
+    		Class<B> bindingType) throws GenericAdapterException {
+        serviceAdapter.answerKnowledgeInteractionBinding(knowledgeInteractionId, bindingSet, bindingType);
     }
 
 }

@@ -3,28 +3,31 @@ package org.esg.ic.ssa.meter.data;
 import java.io.IOException;
 import java.time.Instant;
 
-import org.esg.ic.ssa.api.Binding;
+import org.esg.ic.ssa.data.NodeValue;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-public abstract class TimeValue implements Binding {
-	private static final long serialVersionUID = 8991805475265666393L;
+public abstract class TimeValue extends NodeValue {
+	private static final long serialVersionUID = 2552330320720578853L;
 
-	private static final String ADDRESS = "http://interconnectproject.eu/pilots/esg";
+	private static final String SAREF_SUFFIX = "^^xsd:float";
 
-    @JsonSerialize(using = SarefAddressSerializer.class)
-    protected String node;
-
-    @JsonSerialize(using = SarefAddressSerializer.class)
+	@JsonSerialize(using = SarefAddressSerializer.class)
+    @JsonDeserialize(using = SarefAddressDeserializer.class)
     protected String measurement;
 
     @JsonSerialize(using = SarefAddressSerializer.class)
+    @JsonDeserialize(using = SarefAddressDeserializer.class)
     protected String property;
 
     protected String type;
@@ -32,12 +35,11 @@ public abstract class TimeValue implements Binding {
     protected String unit;
 
     @JsonSerialize(using = SarefInstantSerializer.class)
+    @JsonDeserialize(using = SarefInstantDeserializer.class)
     protected Instant timestamp;
 
     protected TimeValue(String node, ValueType type, Instant timestamp) {
-        super();
-        this.node = node;
-
+        super(node);
         String measurementType = type.getSuffix();
         this.measurement = node + measurementType;
         this.property = node + measurementType;
@@ -46,12 +48,8 @@ public abstract class TimeValue implements Binding {
         this.timestamp = timestamp;
     }
 
-    public String getNode() {
-        return node;
-    }
-
-    public void setNode(String node) {
-        this.node = node;
+    protected TimeValue() {
+    	super();
     }
 
     public String getMeasurement() {
@@ -104,20 +102,6 @@ public abstract class TimeValue implements Binding {
         }
     }
 
-    static class SarefAddressSerializer extends JsonSerializer<String> {
-
-        public SarefAddressSerializer() {
-            super();
-        }
-
-        @Override
-        public void serialize(String value, JsonGenerator generator, SerializerProvider provider) 
-    		    throws IOException, JsonProcessingException {
-        	String valueName = generator.getOutputContext().getCurrentName();
-            generator.writeNumber('"' + String.format("<%s/%s#%s>", ADDRESS, valueName, value) + '"');
-        }
-    }
-
     static class SarefInstantSerializer extends JsonSerializer<Instant> {
 
         public SarefInstantSerializer() {
@@ -132,7 +116,7 @@ public abstract class TimeValue implements Binding {
         	jsonBuilder.append('\\').append('"');
         	jsonBuilder.append(serializeInstant(value));
         	jsonBuilder.append('\\').append('"');
-        	jsonBuilder.append("^^time:Instant");
+        	jsonBuilder.append(SAREF_SUFFIX);
         	jsonBuilder.append('"');
             generator.writeNumber(jsonBuilder.toString());
         }
@@ -140,5 +124,24 @@ public abstract class TimeValue implements Binding {
         private static String serializeInstant(Instant value) throws JsonProcessingException {
         	return new ObjectMapper().registerModule(new JavaTimeModule()).writeValueAsString(value);
         }
+    }
+
+    static class SarefInstantDeserializer extends JsonDeserializer<Instant> {
+
+        public SarefInstantDeserializer() {
+            super();
+        }
+
+		@Override
+		public Instant deserialize(JsonParser parser, DeserializationContext context) throws
+				IOException, JsonProcessingException {
+	        String instantStr = parser.getText().replace(SAREF_SUFFIX, "").replaceAll("\"", "");
+	        String[] instant = instantStr.split("[^0-9]+");
+	        if (instant.length == 1) {
+		        return Instant.ofEpochSecond(Long.valueOf(instant[0]));
+	        }
+	        return Instant.ofEpochSecond(Long.valueOf(instant[0]),
+	        		Integer.valueOf(instant[1]));
+		}
     }
 }

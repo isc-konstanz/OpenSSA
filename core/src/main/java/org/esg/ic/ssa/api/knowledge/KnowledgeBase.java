@@ -20,6 +20,9 @@
  */
 package org.esg.ic.ssa.api.knowledge;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 public class KnowledgeBase {
 
     public final static String ID = "knowledgeBaseId";
@@ -29,7 +32,9 @@ public class KnowledgeBase {
     public String knowledgeBaseId;
     public String knowledgeBaseName;
     public String knowledgeBaseDescription;
-    private boolean reasonerEnabled;
+
+    @JsonInclude(Include.NON_NULL)
+    private Boolean reasonerEnabled;
 
     public KnowledgeBase(String knowledgeBaseId, String knowledgeBaseName, String knowledgeBaseDescription) {
         this.knowledgeBaseId = knowledgeBaseId;
@@ -44,35 +49,35 @@ public class KnowledgeBase {
         this.reasonerEnabled = reasonerEnabled;
     }
 
-    public String getId() {
-        return knowledgeBaseId;
-    }
+    public String getKnowledgeBaseId() {
+		return knowledgeBaseId;
+	}
 
-    public void setId(String knowledgeBaseId) {
-        this.knowledgeBaseId = knowledgeBaseId;
-    }
+	public void setKnowledgeBaseId(String knowledgeBaseId) {
+		this.knowledgeBaseId = knowledgeBaseId;
+	}
 
-    public String getName() {
-        return knowledgeBaseName;
-    }
+	public String getKnowledgeBaseName() {
+		return knowledgeBaseName;
+	}
 
-    public void setName(String knowledgeBaseName) {
-        this.knowledgeBaseName = knowledgeBaseName;
-    }
+	public void setKnowledgeBaseName(String knowledgeBaseName) {
+		this.knowledgeBaseName = knowledgeBaseName;
+	}
 
-    public String getDescription() {
-        return knowledgeBaseDescription;
-    }
+	public String getKnowledgeBaseDescription() {
+		return knowledgeBaseDescription;
+	}
 
-    public void setDescription(String knowledgeBaseDescription) {
-        this.knowledgeBaseDescription = knowledgeBaseDescription;
-    }
+	public void setKnowledgeBaseDescription(String knowledgeBaseDescription) {
+		this.knowledgeBaseDescription = knowledgeBaseDescription;
+	}
 
-    public boolean isReasonerEnabled() {
+	public Boolean isReasonerEnabled() {
         return reasonerEnabled;
     }
 
-    public void setReasonerEnabled(boolean reasonerEnabled) {
+    public void setReasonerEnabled(Boolean reasonerEnabled) {
         this.reasonerEnabled = reasonerEnabled;
     }
 }

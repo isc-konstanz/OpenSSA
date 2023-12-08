@@ -86,7 +86,7 @@ public class MeterService extends ServiceAdapter {
     public static void main(String [] args) throws InterruptedException {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         loggerContext.getLogger(Logger.ROOT_LOGGER_NAME).setLevel(Level.INFO);
-        loggerContext.getLogger(GenericAdapter.class).setLevel(Level.DEBUG);
+        //loggerContext.getLogger(GenericAdapter.class).setLevel(Level.DEBUG);
         
         int interval = 10000;
         

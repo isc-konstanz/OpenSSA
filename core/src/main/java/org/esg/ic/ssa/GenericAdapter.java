@@ -38,6 +38,9 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.esg.ic.ssa.api.Binding;
+import org.esg.ic.ssa.api.BindingSet.BindingDeserializerModifier;
+import org.esg.ic.ssa.api.BindingSetHandle;
 import org.esg.ic.ssa.api.LoginForm;
 import org.esg.ic.ssa.api.RegisterAdapterForm;
 import org.slf4j.Logger;
@@ -47,6 +50,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
 public class GenericAdapter {
@@ -178,6 +182,22 @@ public class GenericAdapter {
     static Map<String, String> decodeResponseSet(CloseableHttpResponse response) throws GenericAdapterException {
         TypeFactory typeFactory = TypeFactory.defaultInstance();
         return decodeResponse(response, typeFactory.constructMapType(HashMap.class, String.class, String.class));
+    }
+
+    static <B extends Binding, H extends BindingSetHandle<B>> H decodeHandle(CloseableHttpResponse response, 
+    		Class<H> handleType, Class<B> bindingType) throws GenericAdapterException {
+    	SimpleModule module = new SimpleModule()
+    			.setDeserializerModifier(new BindingDeserializerModifier<B>(bindingType));
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(module);
+        try {
+        	return objectMapper
+		    		.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+		    		.readValue(decodeEntity(response.getEntity()), handleType);
+
+        } catch (JsonProcessingException e) {
+            throw new GenericAdapterException(e);
+        }
     }
 
     static String decodeEntity(HttpEntity entity) throws GenericAdapterException {

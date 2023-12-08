@@ -22,29 +22,16 @@ package org.esg.ic.ssa.api;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-
-public class ResponseHandle<B extends Binding> {
-
-    @JsonAlias({"bindingSet", "resultBindingSet"})
-    List<B> resultBindingSet;
+public class ResponseHandle<B extends Binding> extends BindingSetHandle<B> {
 
 	private List<ExchangeInfo> exchangeInfo;
 
-	public ResponseHandle(List<B> resultBindingSet, List<ExchangeInfo> exchangeInfo) {
-		this.resultBindingSet = resultBindingSet;
+	public ResponseHandle(BindingSet<B> bindingSet, List<ExchangeInfo> exchangeInfo) {
+		super(bindingSet);
 		this.exchangeInfo = exchangeInfo;
 	}
 
 	public ResponseHandle() {
-	}
-
-	public List<B> getResultBindingSet() {
-		return resultBindingSet;
-	}
-
-	public void setResultBindingSet(List<B> resultBindingSet) {
-		this.resultBindingSet = resultBindingSet;
 	}
 
 	public List<ExchangeInfo> getExchangeInfo() {

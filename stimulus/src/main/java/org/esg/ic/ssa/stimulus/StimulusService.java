@@ -1,13 +1,17 @@
 package org.esg.ic.ssa.stimulus;
 
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Locale;
+
 import org.esg.ic.ssa.GenericAdapter;
 import org.esg.ic.ssa.GenericAdapterConnectionException;
 import org.esg.ic.ssa.GenericAdapterException;
 import org.esg.ic.ssa.GenericAdapterTimeoutException;
 import org.esg.ic.ssa.ServiceAdapter;
-import org.esg.ic.ssa.api.StartHandle;
 import org.esg.ic.ssa.meter.MeterReactInteraction;
 import org.esg.ic.ssa.meter.MeterService;
+import org.esg.ic.ssa.meter.data.FloatValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,8 +40,13 @@ public class StimulusService extends ServiceAdapter {
                 //TariffingService tariffService = adapter.register(TariffingService.class);
                 while (true) {
                 	try {
-                    	StartHandle handle = interaction.react();
-                    	System.out.println(handle);
+                    	List<FloatValue> values = interaction.react();
+                    	if (values.size() > 0) {
+                        	FloatValue value = values.get(0);
+                        	System.out.println(String.format(Locale.US, "%s: %.3f", 
+                        			DateTimeFormatter.ISO_INSTANT.format(value.getTimestamp()), 
+                        			value.getValue()));
+                    	}
                     	
                 	} catch (GenericAdapterTimeoutException e) {
                 		// Continue to wait for power values

@@ -28,8 +28,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 public abstract class PostReactKnowledgeInteraction extends KnowledgeInteraction {
 
-	public final static KnowledgeInteractionType TYPE = KnowledgeInteractionType.POST;
-
 	@JsonSerialize(using = GraphPattern.Serializer.class)
     public GraphPattern argumentGraphPattern;
 
@@ -37,9 +35,9 @@ public abstract class PostReactKnowledgeInteraction extends KnowledgeInteraction
 	@JsonSerialize(using = GraphPattern.Serializer.class)
     public GraphPattern resultGraphPattern;
 
-    public PostReactKnowledgeInteraction(KnowledgeInteractionType type,
+    public PostReactKnowledgeInteraction(KnowledgeInteractionType knowledgeInteractionType,
     		GraphPattern argumentGraphPattern, GraphPattern resultGraphPattern) {
-    	super(TYPE);
+    	super(knowledgeInteractionType);
         this.prefixes = argumentGraphPattern.getPrefixes();
         this.argumentGraphPattern = argumentGraphPattern;
         this.resultGraphPattern = resultGraphPattern;

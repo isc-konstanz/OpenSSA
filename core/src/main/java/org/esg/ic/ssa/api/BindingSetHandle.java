@@ -20,46 +20,29 @@
  */
 package org.esg.ic.ssa.api;
 
-import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class SendHandle<B extends Binding> {
+public class BindingSetHandle<B extends Binding> {
 
-	private String handleRequestId;
+    @JsonAlias({"bindingSet", "resultBindingSet"})
+    protected BindingSet<B> bindingSet;
 
-	private List<B> bindingSet;
+	public BindingSetHandle(BindingSet<B> bindingSet) {
+		this.bindingSet = bindingSet;
+	}
 
-    public SendHandle(String handleRequestId) {
-        super();
-        this.handleRequestId = handleRequestId;
-    }
+	public BindingSetHandle() {
+	}
 
-    public SendHandle(String handleRequestId, List<B> bindingSet) {
-        this(handleRequestId);
-        this.bindingSet = bindingSet;
-    }
+	public BindingSet<B> getBindingSet() {
+		return bindingSet;
+	}
 
-    public SendHandle() {
-        super();
-    }
-
-    public String getHandleRequestId() {
-        return handleRequestId;
-    }
-
-    public void setHandleRequestId(String handleRequestId) {
-        this.handleRequestId = handleRequestId;
-    }
-
-    public List<B> getBindingSet() {
-        return bindingSet;
-    }
-
-    public void setBindingSet(List<B> bindingSet) {
-        this.bindingSet = bindingSet;
-    }
+	public void setBindingSet(BindingSet<B> bindingSet) {
+		this.bindingSet = bindingSet;
+	}
 
     @Override
     public String toString() {
@@ -70,9 +53,4 @@ public class SendHandle<B extends Binding> {
         	return e.getMessage();
         }
     }
-
-    public static <B extends Binding> SendHandle<B> ofStartHandle(StartHandle<B> startHandle) {
-    	return new SendHandle<B>(startHandle.getHandleRequestId());
-    }
-
 }

@@ -22,10 +22,8 @@ package org.esg.ic.ssa.api;
 
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -46,7 +44,7 @@ public interface Binding extends Serializable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public default <B extends Binding> List<B> toList() {
-		return new ArrayList<B>(Arrays.asList((B) this));
+	public default <B extends Binding> BindingSet<B> toSet() {
+		return new BindingSet<B>((B) this);
 	}
 }

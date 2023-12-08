@@ -21,7 +21,7 @@
 package org.esg.ic.ssa;
 
 import static org.esg.ic.ssa.GenericAdapter.decodeEntity;
-import static org.esg.ic.ssa.GenericAdapter.decodeResponse;
+import static org.esg.ic.ssa.GenericAdapter.decodeHandle;
 import static org.esg.ic.ssa.GenericAdapter.decodeResponseSet;
 import static org.esg.ic.ssa.GenericAdapter.encodeEntity;
 import static org.esg.ic.ssa.GenericAdapter.verifyResponse;
@@ -42,21 +42,27 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.esg.ic.ssa.api.Binding;
+import org.esg.ic.ssa.api.BindingSet;
 import org.esg.ic.ssa.api.ResponseHandle;
+import org.esg.ic.ssa.api.SendHandle;
 import org.esg.ic.ssa.api.StartHandle;
 import org.esg.ic.ssa.api.knowledge.AnswerKnowledgeInteraction;
 import org.esg.ic.ssa.api.knowledge.AskKnowledgeInteraction;
 import org.esg.ic.ssa.api.knowledge.KnowledgeBase;
 import org.esg.ic.ssa.api.knowledge.PostKnowledgeInteraction;
 import org.esg.ic.ssa.api.knowledge.ReactKnowledgeInteraction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class ServiceAdapter implements AutoCloseable {
 
-    public static final String HASH = "hash";
+    private static final Logger logger = LoggerFactory.getLogger(ServiceAdapter.class);
 
     protected static final String SERVICE_PROPERTIES = "service.properties";
 
     protected static final int TIMEOUT = 29000;
+
+    public static final String HASH = "hash";
 
     protected final GenericAdapter genericAdapter;
 
@@ -162,7 +168,7 @@ public abstract class ServiceAdapter implements AutoCloseable {
     protected void deleteKnowledgeBase() throws GenericAdapterException {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
         	HttpDelete httpDelete = getGenericAdapter().buildHttpDelete("/smartconnector/delete");
-            httpDelete.setHeader("KnowledgeBaseId", getKnowledgeBase().getId());
+            httpDelete.setHeader("KnowledgeBaseId", getKnowledgeBase().getKnowledgeBaseId());
 
             CloseableHttpResponse response = client.execute(httpDelete);
             verifyResponse(response);
@@ -177,7 +183,7 @@ public abstract class ServiceAdapter implements AutoCloseable {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpPost httpPost = getGenericAdapter().buildHttpPost("/smartconnector/ki/register-post-react");
             httpPost.setEntity(encodeEntity(knowledgeInteraction));
-            httpPost.setHeader("KnowledgeBaseId", getKnowledgeBase().getId());
+            httpPost.setHeader("KnowledgeBaseId", getKnowledgeBase().getKnowledgeBaseId());
             
             CloseableHttpResponse response = client.execute(httpPost);
             verifyResponse(response);
@@ -190,12 +196,12 @@ public abstract class ServiceAdapter implements AutoCloseable {
         }
     }
 
-    protected <B extends Binding> String postKnowledgeInteractionBinding(String knowledgeInteractionId, List<B> bindingSet)
-    		throws GenericAdapterException {
+    protected <B extends Binding> String postKnowledgeInteractionBinding(String knowledgeInteractionId,
+    		List<B> bindingSet) throws GenericAdapterException {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpPost httpPost = getGenericAdapter().buildHttpPost("/smartconnector/post");
             httpPost.setEntity(encodeEntity(bindingSet));
-            httpPost.setHeader("KnowledgeBaseId", getKnowledgeBase().getId());
+            httpPost.setHeader("KnowledgeBaseId", getKnowledgeBase().getKnowledgeBaseId());
             httpPost.setHeader("KnowledgeInteractionId", knowledgeInteractionId);
             
             CloseableHttpResponse response = client.execute(httpPost);
@@ -213,7 +219,7 @@ public abstract class ServiceAdapter implements AutoCloseable {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpPost httpPost = getGenericAdapter().buildHttpPost("/smartconnector/ki/register-post-react");
             httpPost.setEntity(encodeEntity(knowledgeInteraction));
-            httpPost.setHeader("KnowledgeBaseId", getKnowledgeBase().getId());
+            httpPost.setHeader("KnowledgeBaseId", getKnowledgeBase().getKnowledgeBaseId());
             
             CloseableHttpResponse response = client.execute(httpPost);
             verifyResponse(response);
@@ -226,8 +232,27 @@ public abstract class ServiceAdapter implements AutoCloseable {
         }
     }
 
-    protected StartHandle reactKnowledgeInteractionBinding() throws GenericAdapterException {
-        return awaitKnowledgeInteractionBinding();
+    protected <B extends Binding> BindingSet<B> reactKnowledgeInteractionBinding(String knowledgeInteractionId,
+    		List<B> bindingSet, Class<B> bindingType) throws GenericAdapterException {
+		StartHandle<B> startHandle = startKnowledgeInteractionHandle(bindingType);
+		SendHandle<B> sendHandle = SendHandle.ofStartHandle(startHandle);
+		sendHandle.setBindingSet(bindingSet);
+
+		String sendHandleId = String.format("%s:%s", knowledgeInteractionId, sendHandle.getHandleRequestId());
+        Thread sendThread = new Thread("SmartConnector-send-"+sendHandleId) {
+            @Override
+            public void run() {
+        		try {
+					sendKnowledgeInteractionHandle(knowledgeInteractionId, sendHandle);
+					
+				} catch (GenericAdapterException e) {
+					logger.warn("Error sending handle {}", sendHandleId);
+				}
+            }
+        };
+        sendThread.start();
+		
+        return startHandle.getBindingSet();
     }
 
     protected String registerAskKnowledgeInteraction(AskKnowledgeInteraction knowledgeInteraction)
@@ -235,7 +260,7 @@ public abstract class ServiceAdapter implements AutoCloseable {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpPost httpPost = getGenericAdapter().buildHttpPost("/smartconnector/ki/register-ask-answer");
             httpPost.setEntity(encodeEntity(knowledgeInteraction));
-            httpPost.setHeader("KnowledgeBaseId", getKnowledgeBase().getId());
+            httpPost.setHeader("KnowledgeBaseId", getKnowledgeBase().getKnowledgeBaseId());
             
             CloseableHttpResponse response = client.execute(httpPost);
             verifyResponse(response);
@@ -248,22 +273,22 @@ public abstract class ServiceAdapter implements AutoCloseable {
         }
     }
 
-    protected <B extends Binding> List<B> askKnowledgeInteractionBinding(String knowledgeInteractionId, 
-    		List<Binding> bindingSet, Class<B> resultType) throws GenericAdapterException {
+    protected <B extends Binding> BindingSet<B> askKnowledgeInteractionBinding(String knowledgeInteractionId, 
+    		List<B> bindingSet, Class<B> resultType) throws GenericAdapterException {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpPost httpPost = getGenericAdapter().buildHttpPost("/smartconnector/ask");
             httpPost.setEntity(encodeEntity(bindingSet));
-            httpPost.setHeader("KnowledgeBaseId", getKnowledgeBase().getId());
+            httpPost.setHeader("KnowledgeBaseId", getKnowledgeBase().getKnowledgeBaseId());
             httpPost.setHeader("KnowledgeInteractionId", knowledgeInteractionId);
             
             CloseableHttpResponse response = client.execute(httpPost);
             verifyResponse(response);
             
 			@SuppressWarnings("unchecked")
-			ResponseHandle<B> responseHandle = decodeResponse(response, ResponseHandle.class);
+			ResponseHandle<B> responseHandle = decodeHandle(response, ResponseHandle.class, resultType);
 			
 			// TODO: Handle exchangeInfo for "FAILED" status
-            return responseHandle.getResultBindingSet();
+            return responseHandle.getBindingSet();
             
         } catch (IOException e) {
             throw new GenericAdapterConnectionException(e);
@@ -275,7 +300,7 @@ public abstract class ServiceAdapter implements AutoCloseable {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpPost httpPost = getGenericAdapter().buildHttpPost("/smartconnector/ki/register-ask-answer");
             httpPost.setEntity(encodeEntity(knowledgeInteraction));
-            httpPost.setHeader("KnowledgeBaseId", getKnowledgeBase().getId());
+            httpPost.setHeader("KnowledgeBaseId", getKnowledgeBase().getKnowledgeBaseId());
             
             CloseableHttpResponse response = client.execute(httpPost);
             verifyResponse(response);
@@ -288,11 +313,30 @@ public abstract class ServiceAdapter implements AutoCloseable {
         }
     }
 
-    protected StartHandle answerKnowledgeInteractionBinding() throws GenericAdapterException {
-        return awaitKnowledgeInteractionBinding();
+    protected <B extends Binding> void answerKnowledgeInteractionBinding(String knowledgeInteractionId,
+    		List<B> bindingSet, Class<B> bindingType) throws GenericAdapterException {
+		StartHandle<B> startHandle = startKnowledgeInteractionHandle(bindingType);
+		SendHandle<B> sendHandle = SendHandle.ofStartHandle(startHandle);
+		sendHandle.setBindingSet(bindingSet);
+
+		String sendHandleId = String.format("%s:%s", knowledgeInteractionId, sendHandle.getHandleRequestId());
+        Thread sendThread = new Thread("SmartConnector-send-"+sendHandleId) {
+            @Override
+            public void run() {
+        		try {
+					sendKnowledgeInteractionHandle(knowledgeInteractionId, sendHandle);
+					
+				} catch (GenericAdapterException e) {
+					logger.warn("Error sending handle {}", sendHandleId);
+				}
+            }
+        };
+        sendThread.start();
     }
 
-    private StartHandle awaitKnowledgeInteractionBinding() throws GenericAdapterException	{
+    @SuppressWarnings("unchecked")
+	private <B extends Binding> StartHandle<B> startKnowledgeInteractionHandle(Class<B> bindingType) 
+    		throws GenericAdapterException	{
     	RequestConfig requestConfig = RequestConfig.custom()
     		    .setConnectionRequestTimeout(TIMEOUT)
     		    .setConnectTimeout(TIMEOUT)
@@ -303,13 +347,32 @@ public abstract class ServiceAdapter implements AutoCloseable {
         	    .setDefaultRequestConfig(requestConfig)
         	    .build()) {
         	HttpGet httpGet = getGenericAdapter().buildHttpGet("/smartconnector/handle/start");
-            httpGet.setHeader("KnowledgeBaseId", getKnowledgeBase().getId());
-            //httpGet.setHeader("KnowledgeInteractionId", knowledgeInteractionId);
+            httpGet.setHeader("KnowledgeBaseId", getKnowledgeBase().getKnowledgeBaseId());
             
             CloseableHttpResponse response = client.execute(httpGet);
             verifyResponse(response);
+
+			// TODO: Handle exchangeInfo for "FAILED" status
+			return decodeHandle(response, StartHandle.class, bindingType);
+
+        } catch (ConnectTimeoutException | SocketTimeoutException e) {
+            throw new GenericAdapterTimeoutException(e);
             
-            return decodeResponse(response, StartHandle.class);
+        } catch (IOException e) {
+            throw new GenericAdapterConnectionException(e);
+        }
+    }
+
+    private <B extends Binding> void sendKnowledgeInteractionHandle(String knowledgeInteractionId,
+    		SendHandle<B> sendHandle) throws GenericAdapterException {    	
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            HttpPost httpPost = getGenericAdapter().buildHttpPost("/smartconnector/handle/send");
+            httpPost.setEntity(encodeEntity(sendHandle));
+            httpPost.setHeader("KnowledgeBaseId", getKnowledgeBase().getKnowledgeBaseId());
+            httpPost.setHeader("KnowledgeInteractionId", knowledgeInteractionId);
+            
+            CloseableHttpResponse response = client.execute(httpPost);
+            verifyResponse(response);
 
         } catch (ConnectTimeoutException | SocketTimeoutException e) {
             throw new GenericAdapterTimeoutException(e);

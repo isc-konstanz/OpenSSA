@@ -20,23 +20,21 @@
  */
 package org.esg.ic.ssa.api;
 
-import java.util.List;
-import java.util.Map;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-public class StartHandle {
+public class StartHandle<B extends Binding> extends BindingSetHandle<B> {
 
 	private String knowledgeInteractionId;
 	private String handleRequestId;
-	private List<Map<String, String>> bindingSet;
+
 	private String requestingKnowledgeBaseId;
 
-    public StartHandle(String knowledgeInteractionId, String handleRequestId, List<Map<String, String>> bindingSet, String requestingKnowledgeBaseId) {
-        this.knowledgeInteractionId = knowledgeInteractionId;
+    public StartHandle(
+    		String knowledgeInteractionId, 
+    		String handleRequestId, 
+    		BindingSet<B> bindingSet, 
+    		String requestingKnowledgeBaseId) {
+        super(bindingSet);
+    	this.knowledgeInteractionId = knowledgeInteractionId;
         this.handleRequestId = handleRequestId;
-        this.bindingSet = bindingSet;
         this.requestingKnowledgeBaseId = requestingKnowledgeBaseId;
     }
 
@@ -59,29 +57,11 @@ public class StartHandle {
         this.handleRequestId = handleRequestId;
     }
 
-    public List<Map<String, String>> getBindingSet() {
-        return bindingSet;
-    }
-
-    public void setBindingSet(List<Map<String, String>> bindingSet) {
-        this.bindingSet = bindingSet;
-    }
-
     public String getRequestingKnowledgeBaseId() {
         return requestingKnowledgeBaseId;
     }
 
     public void setRequestingKnowledgeBaseId(String requestingKnowledgeBaseId) {
         this.requestingKnowledgeBaseId = requestingKnowledgeBaseId;
-    }
-
-    @Override
-    public String toString() {
-        try {
-            return new ObjectMapper().writeValueAsString(this);
-            
-        } catch (JsonProcessingException e) {
-        	return e.getMessage();
-        }
     }
 }
