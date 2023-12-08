@@ -92,7 +92,7 @@ public class MeterService extends ServiceAdapter {
         
         GenericAdapter adapter = new GenericAdapter();
         try {
-            adapter.login("adrian.minde@isc-konstanz.de", "DimICa!468372666328");
+            adapter.login("<user>", "<password>");
             
             try (MeterService service = MeterService.registerPosting(adapter)) {
             	MeterPostInteraction interaction = service.registerPostKnowledgeInteraction("node_id", ValueType.POWER);

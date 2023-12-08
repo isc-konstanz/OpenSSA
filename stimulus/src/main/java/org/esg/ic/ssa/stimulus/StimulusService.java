@@ -33,8 +33,8 @@ public class StimulusService extends ServiceAdapter {
         
         GenericAdapter adapter = new GenericAdapter();
         try {
-            adapter.login("adrian.minde@isc-konstanz.de", "DimICa!468372666328");
-
+            adapter.login("<user>", "<password>");
+            
             try (MeterService service = MeterService.registerReacting(adapter)) {
             	MeterReactInteraction interaction = service.registerReactKnowledgeInteraction();
                 //TariffingService tariffService = adapter.register(TariffingService.class);

@@ -18,6 +18,27 @@
  * along with OpenSSA. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-include 'core', 'meter', 'stimulus', 'tariff', 'recommendation'
+package org.esg.ic.ssa.recommender.dto;
 
-//project(':bundle').projectDir = file('bundle/openmuc')
+import java.util.List;
+import java.util.UUID;
+
+import org.esg.ic.ssa.api.Binding;
+
+import lombok.Builder;
+import lombok.Data;
+import lombok.extern.jackson.Jacksonized;
+
+@Jacksonized
+@Data
+@Builder
+public class Recommendation implements Binding {
+	private static final long serialVersionUID = 1L;
+
+	UUID id;
+
+    RecommendationMetadata metadata;
+
+    List<DataItem> data;
+
+}

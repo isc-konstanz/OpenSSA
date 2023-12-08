@@ -18,6 +18,39 @@
  * along with OpenSSA. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-include 'core', 'meter', 'stimulus', 'tariff', 'recommendation'
+package org.esg.ic.ssa.recommender.dto;
 
-//project(':bundle').projectDir = file('bundle/openmuc')
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.Data;
+import lombok.extern.jackson.Jacksonized;
+
+import java.time.LocalDateTime;
+
+@Jacksonized
+@Builder
+@Data
+public class RecommendationMetadata {
+
+    @JsonProperty("country_code")
+    String countryCode;
+
+    @JsonProperty("country_name")
+    String countryName;
+
+    @JsonProperty("zip_code")
+    String zipCode;
+
+    String message;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
+    @JsonProperty("created_at")
+    LocalDateTime createdAt;
+
+    @JsonProperty("created_by")
+    String createdBy;
+
+    RecommendationPeriod period;
+
+}
