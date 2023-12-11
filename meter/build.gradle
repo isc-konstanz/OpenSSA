@@ -18,24 +18,24 @@
  * along with OpenSSA. If not, see <http://www.gnu.org/licenses/>.
  */
 archivesBaseName = 'esg-ic-ssa-meter'
-def projectName = 'InterConnect-SSA-Meter'
-def projectFullName = 'InterConnect Metering ServiceSpecificAdapter'
-def projectDescription = 'The Service Specific Adapter for smart metering in the InterConnect Project'
-
-dependencies {
-  api project(':core')
+project.ext {
+    projectName = 'InterConnect-SSA-Meter'
+    projectFullName = 'InterConnect Metering ServiceSpecificAdapter'
+    projectDescription = 'The Service Specific Adapter for smart metering in the InterConnect Project'
 }
 
-eclipse {
-  project {
-    name = projectName
-  }
+dependencies {
+    api project(':core')
 }
 
 jar {
-  manifest {
-    attributes('Bundle-Name':        projectFullName,
-               'Bundle-Description': projectDescription,
-	           'Export-Package':     'org.esg.ic.ssa.meter.*')
-  }
+    bnd('Bundle-Name':        projectFullName,
+        'Bundle-Description': projectDescription,
+        'Export-Package':   'org.esg.ic.ssa.meter.*')
+}
+
+eclipse {
+    project {
+        name = archivesBaseName
+    }
 }

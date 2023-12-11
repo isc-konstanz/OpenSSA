@@ -20,29 +20,31 @@
  */
 project.ext {
 
-  projectVersion = '0.1.0'
+    projectVersion = '0.1.0'
 
-  projectGroup = 'org.esg'
+    projectGroup = 'de.kn.isc'
 
-  projectVendor = 'ISC Konstanz e.V.'
-  projectSite = 'https://github.com/isc-konstanz/OpenSSA'
+    projectVendor = 'ISC Konstanz e.V.'
+    projectHomepage = 'https://isc-konstanz.de'
+    projectRepository = 'https://github.com/isc-konstanz/OpenSSA'
+    projectMaintainer = 'Adrian Minde <adrian.minde@isc-konstanz.de>'
 
-  copyDependencies = false
+    copyDependencies = false
 
-  distributionProjects = subprojects.findAll {
-    it.getPath() == ':core' ||
-    it.getPath() == ':meter' ||
-    it.getPath() == ':stimulus' ||
-    it.getPath() == ':tariff'||
-    it.getPath() == ':recommender'
-  }
+    distributionProjects = subprojects.findAll {
+        it.getPath() == ':core' ||
+        it.getPath() == ':meter' ||
+        it.getPath() == ':stimulus' ||
+        it.getPath() == ':tariff'||
+        it.getPath() == ':recommender'
+    }
 
-  javadocProjects = distributionProjects.findAll {
-    it.getPath() == ':core' ||
-    it.getPath() == ':meter' ||
-    it.getPath() == ':stimulus' ||
-    it.getPath() == ':tariff' ||
-    it.getPath() == ':recommender'
-  }
+    javadocProjects = distributionProjects.findAll {
+        it.getPath() == ':core' ||
+        it.getPath() == ':meter' ||
+        it.getPath() == ':stimulus' ||
+        it.getPath() == ':tariff' ||
+        it.getPath() == ':recommender'
+    }
 
 }

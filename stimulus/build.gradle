@@ -18,24 +18,26 @@
  * along with OpenSSA. If not, see <http://www.gnu.org/licenses/>.
  */
 archivesBaseName = 'esg-ic-ssa-stimulus'
-def projectName = 'InterConnect-SSA-Stimulus'
-def projectFullName = 'InterConnect Stimulus ServiceSpecificAdapter'
-def projectDescription = 'The Service Specific Adapter for stimulis of the InterConnect Project'
-
-dependencies {
-  api project(':core')
+project.ext {
+    projectName = 'InterConnect-SSA-Stimulus'
+    projectFullName = 'InterConnect Stimulus ServiceSpecificAdapter'
+    projectDescription = 'The Service Specific Adapter for stimulis of the InterConnect Project'
 }
 
-eclipse {
-  project {
-    name = projectName
-  }
+dependencies {
+    api project(':core')
+
+    implementation project(':meter')
 }
 
 jar {
-  manifest {
-    attributes('Bundle-Name':        projectFullName,
-               'Bundle-Description': projectDescription,
-	           'Export-Package':     'org.esg.ic.ssa.stimulus.*')
-  }
+    bnd('Bundle-Name':        projectFullName,
+        'Bundle-Description': projectDescription,
+        'Export-Package':   'org.esg.ic.ssa.stimulus.*')
+}
+
+eclipse {
+    project {
+        name = archivesBaseName
+    }
 }

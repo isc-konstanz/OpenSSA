@@ -18,24 +18,24 @@
  * along with OpenSSA.  If not, see <http://www.gnu.org/licenses/>.
  */
 archivesBaseName = 'esg-ic-ssa-recommender'
-def projectName = 'InterConnect-SSA-Recommender'
-def projectFullName = 'InterConnect Recommender ServiceSpecificAdapter'
-def projectDescription = 'The Service Specific Adapter for recommenders in the InterConnect Project'
-
-dependencies {
-  api project(':core')
+project.ext {
+    projectName = 'InterConnect-SSA-Recommender'
+    projectFullName = 'InterConnect Recommender ServiceSpecificAdapter'
+    projectDescription = 'The Service Specific Adapter for recommenders in the InterConnect Project'
 }
 
-eclipse {
-  project {
-    name = projectName
-  }
+dependencies {
+    api project(':core')
 }
 
 jar {
-  manifest {
-    attributes('Bundle-Name':        projectFullName,
-               'Bundle-Description': projectDescription,
-	           'Export-Package':     'org.esg.ic.ssa.recommender.*')
-  }
+    bnd('Bundle-Name':        projectFullName,
+        'Bundle-Description': projectDescription,
+        'Export-Package':   'org.esg.ic.ssa.recommender.*')
+}
+
+eclipse {
+    project {
+        name = archivesBaseName
+    }
 }

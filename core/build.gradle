@@ -18,37 +18,36 @@
  * along with OpenSSA.  If not, see <http://www.gnu.org/licenses/>.
  */
 archivesBaseName = 'esg-ic-ssa-core'
-def projectName = 'InterConnect-SSA-Core'
-def projectFullName = 'EasySmartGrid InterConnect Core ServiceSpecificAdapter'
-def projectDescription = 'The Service Specific Adapter core library for the InterConnect Project'
-
+project.ext {
+    projectName = 'InterConnect-SSA-Core'
+    projectFullName = 'EasySmartGrid InterConnect Core ServiceSpecificAdapter'
+    projectDescription = 'The Service Specific Adapter core library for the InterConnect Project'
+}
 def jacksonVersion = '2.16.0'
 def apacheHttpVersion = '4.5.14'
 def apacheJenaVersion = '3.17.0'
 
 dependencies {
-  api group: "org.slf4j",       name: "slf4j-api", version: "1.7.36"
-  api group: "ch.qos.logback",  name: "logback-core", version: "1.2.11"
-  api group: "ch.qos.logback",  name: "logback-classic", version: "1.2.11"
+    api group: "org.slf4j",       name: "slf4j-api", version: "1.7.36"
+    api group: "ch.qos.logback",  name: "logback-core", version: "1.2.11"
+    api group: "ch.qos.logback",  name: "logback-classic", version: "1.2.11"
 
-  api group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion
-  api group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: jacksonVersion
-  api group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
-  api group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: jacksonVersion
-  implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: apacheHttpVersion
-  implementation group: 'org.apache.jena', name: 'apache-jena-libs', version: apacheJenaVersion
-}
-
-eclipse {
-  project {
-    name = projectName
-  }
+    api group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion
+    api group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: jacksonVersion
+    api group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
+    api group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: jacksonVersion
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: apacheHttpVersion
+    implementation group: 'org.apache.jena', name: 'apache-jena-libs', version: apacheJenaVersion
 }
 
 jar {
-  manifest {
-    attributes('Bundle-Name':        projectFullName,
-               'Bundle-Description': projectDescription,
-	           'Export-Package':     'org.esg.ic.ssa.*')
-  }
+    bnd('Bundle-Name':        projectFullName,
+        'Bundle-Description': projectDescription,
+        'Export-Package':   'org.esg.ic.ssa.*')
+}
+
+eclipse {
+    project {
+        name = archivesBaseName
+    }
 }

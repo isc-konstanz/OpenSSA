@@ -18,25 +18,25 @@
  * along with OpenSSA. If not, see <http://www.gnu.org/licenses/>.
  */
 archivesBaseName = 'esg-ic-ssa-dyn-tariff'
-def projectName = 'InterConnect-SSA-DynTariff'
-def projectFullName = 'InterConnect Dynamic Tariff ServiceSpecificAdapter'
-def projectDescription = 'The Service Specific Adapter for dynamic tariffs of the InterConnect Project'
-
-dependencies {
-  api project(':core')
-  implementation project(':stimulus')
+project.ext {
+    projectName = 'InterConnect-SSA-DynTariff'
+    projectFullName = 'InterConnect Dynamic Tariff ServiceSpecificAdapter'
+    projectDescription = 'The Service Specific Adapter for dynamic tariffs of the InterConnect Project'
 }
 
-eclipse {
-  project {
-    name = projectName
-  }
+dependencies {
+    api project(':core')
+    implementation project(':stimulus')
 }
 
 jar {
-  manifest {
-    attributes('Bundle-Name':        projectFullName,
-               'Bundle-Description': projectDescription,
-	           'Export-Package':     'org.esg.ic.ssa.tariff.*')
-  }
+    bnd('Bundle-Name':        projectFullName,
+        'Bundle-Description': projectDescription,
+        'Export-Package':   'org.esg.ic.ssa.tariff.*')
+}
+
+eclipse {
+    project {
+        name = archivesBaseName
+    }
 }
