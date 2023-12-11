@@ -43,6 +43,7 @@ public class RecommenderService extends ServiceAdapter {
     protected GraphPrefixes graphPrefixes = GraphPrefixes.DEFAULT
 			.setNsPrefix("dc",         "http://purl.org/dc/elements/1.1/")
 	        .setNsPrefix("gn",         "https://www.geonames.org/ontology#")
+            .setNsPrefix("time",       "http://www.w3.org/2006/time#")
 	        .setNsPrefix("saref4ener", "https://saref.etsi.org/saref4ener/")
 	        .setNsPrefix("iso3166",    "http://purl.org/dc/terms/ISO3166")
 	        .setNsPrefix("ic-data",    "http://ontology.tno.nl/interconnect/datapoint#");

@@ -21,7 +21,8 @@
 package org.esg.ic.ssa.meter.data;
 
 import java.io.IOException;
-import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import org.esg.ic.ssa.data.NodeValue;
 
@@ -35,12 +36,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public abstract class TimeValue extends NodeValue {
 	private static final long serialVersionUID = 2552330320720578853L;
 
-	private static final String SAREF_SUFFIX = "^^xsd:float";
+	private static final String SAREF_SUFFIX = "^^xsd:dateTime";
 
 	@JsonSerialize(using = SarefAddressSerializer.class)
     @JsonDeserialize(using = SarefAddressDeserializer.class)
@@ -55,10 +55,10 @@ public abstract class TimeValue extends NodeValue {
     protected String unit;
 
     @JsonSerialize(using = SarefInstantSerializer.class)
-    @JsonDeserialize(using = SarefInstantDeserializer.class)
-    protected Instant timestamp;
+    @JsonDeserialize(using = SarefDateTimeDeserializer.class)
+    protected ZonedDateTime timestamp;
 
-    protected TimeValue(String node, ValueType type, Instant timestamp) {
+    protected TimeValue(String node, ValueType type, ZonedDateTime timestamp) {
         super(node);
         String measurementType = type.getSuffix();
         this.measurement = node + measurementType;
@@ -104,11 +104,11 @@ public abstract class TimeValue extends NodeValue {
         this.unit = unit;
     }
 
-	public Instant getTimestamp() {
+	public ZonedDateTime getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(Instant timestamp) {
+    public void setTimestamp(ZonedDateTime timestamp) {
         this.timestamp = timestamp;
     }
 
@@ -122,46 +122,37 @@ public abstract class TimeValue extends NodeValue {
         }
     }
 
-    static class SarefInstantSerializer extends JsonSerializer<Instant> {
+    static class SarefInstantSerializer extends JsonSerializer<ZonedDateTime> {
 
         public SarefInstantSerializer() {
             super();
         }
 
         @Override
-        public void serialize(Instant value, JsonGenerator generator, SerializerProvider provider) 
+        public void serialize(ZonedDateTime dateTime, JsonGenerator generator, SerializerProvider provider) 
     		    throws IOException, JsonProcessingException {
         	StringBuilder jsonBuilder = new StringBuilder();
         	jsonBuilder.append('"');
         	jsonBuilder.append('\\').append('"');
-        	jsonBuilder.append(serializeInstant(value));
+        	jsonBuilder.append(DateTimeFormatter.ISO_DATE_TIME.format(dateTime));
         	jsonBuilder.append('\\').append('"');
         	jsonBuilder.append(SAREF_SUFFIX);
         	jsonBuilder.append('"');
             generator.writeNumber(jsonBuilder.toString());
         }
-
-        private static String serializeInstant(Instant value) throws JsonProcessingException {
-        	return new ObjectMapper().registerModule(new JavaTimeModule()).writeValueAsString(value);
-        }
     }
 
-    static class SarefInstantDeserializer extends JsonDeserializer<Instant> {
+    static class SarefDateTimeDeserializer extends JsonDeserializer<ZonedDateTime> {
 
-        public SarefInstantDeserializer() {
+        public SarefDateTimeDeserializer() {
             super();
         }
 
 		@Override
-		public Instant deserialize(JsonParser parser, DeserializationContext context) throws
+		public ZonedDateTime deserialize(JsonParser parser, DeserializationContext context) throws
 				IOException, JsonProcessingException {
-	        String instantStr = parser.getText().replace(SAREF_SUFFIX, "").replaceAll("\"", "");
-	        String[] instant = instantStr.split("[^0-9]+");
-	        if (instant.length == 1) {
-		        return Instant.ofEpochSecond(Long.valueOf(instant[0]));
-	        }
-	        return Instant.ofEpochSecond(Long.valueOf(instant[0]),
-	        		Integer.valueOf(instant[1]));
+	        String dateTimeStr = parser.getText().replace(SAREF_SUFFIX, "").replaceAll("\"", "");
+	        return ZonedDateTime.parse(dateTimeStr, DateTimeFormatter.ISO_DATE_TIME);
 		}
     }
 }

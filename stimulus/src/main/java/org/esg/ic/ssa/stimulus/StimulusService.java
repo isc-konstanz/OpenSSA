@@ -50,6 +50,7 @@ public class StimulusService extends ServiceAdapter {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         loggerContext.getLogger(Logger.ROOT_LOGGER_NAME).setLevel(Level.INFO);
         loggerContext.getLogger(GenericAdapter.class).setLevel(Level.DEBUG);
+        Logger logger = loggerContext.getLogger(StimulusService.class);
         
         GenericAdapter adapter = new GenericAdapter();
         try {
@@ -62,12 +63,12 @@ public class StimulusService extends ServiceAdapter {
                 	try {
                     	List<FloatValue> values = interaction.react();
                     	if (values.size() > 0) {
-                        	FloatValue value = values.get(0);
-                        	System.out.println(String.format(Locale.US, "%s: %.3f", 
-                        			DateTimeFormatter.ISO_INSTANT.format(value.getTimestamp()), 
-                        			value.getValue()));
+                    		for (FloatValue value : values) {
+                            	logger.info("{}: {}",
+                            			DateTimeFormatter.ISO_INSTANT.format(value.getTimestamp()), 
+                            			String.format(Locale.US, "%.3f", value.getValue()));
+                    		}
                     	}
-                    	
                 	} catch (GenericAdapterTimeoutException e) {
                 		// Continue to wait for power values
                 	} catch (GenericAdapterConnectionException e) {

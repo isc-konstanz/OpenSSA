@@ -76,7 +76,6 @@ public class GraphPrefixes extends PrefixMappingImpl implements PrefixMapping, S
 
     public static final GraphPrefixes DEFAULT = GraphPrefixes.Factory.create()
             .setNsPrefix("saref", "https://saref.etsi.org/core/")
-            .setNsPrefix("time",  "http://www.w3.org/2006/time#")
             .setNsPrefix("rdf",   RDF.getURI())
             .setNsPrefix("xsd",   XSD.getURI());
 }

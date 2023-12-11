@@ -20,7 +20,7 @@
  */
 package org.esg.ic.ssa.meter;
 
-import java.time.Instant;
+import java.time.ZonedDateTime;
 
 import org.esg.ic.ssa.GenericAdapterException;
 import org.esg.ic.ssa.ServiceInteraction;
@@ -44,7 +44,7 @@ public class MeterPostInteraction extends ServiceInteraction<MeterService> {
         this.type = type;
     }
 
-    public void post(Instant timestamp, float value) throws GenericAdapterException {
+    public void post(ZonedDateTime timestamp, float value) throws GenericAdapterException {
         FloatValue bindingValue = new FloatValue(node, type, timestamp, value);
         if (!serviceAdapter.graphPattern.validateBinding(bindingValue)) {
             throw new GenericAdapterException("Invalid binding to graph pattern: " + bindingValue);

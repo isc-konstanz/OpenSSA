@@ -6,4 +6,4 @@
 ?measurement saref:hasValue ?value .
 ?value rdf:type xsd:float .
 ?measurement saref:hasTimestamp ?timestamp .
-?timestamp rdf:type time:Instant .
+?timestamp rdf:type xsd:dateTime .

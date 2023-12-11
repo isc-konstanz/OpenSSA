@@ -21,7 +21,7 @@
 package org.esg.ic.ssa.meter.data;
 
 import java.io.IOException;
-import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Locale;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -43,7 +43,7 @@ public class FloatValue extends TimeValue {
     @JsonDeserialize(using = SarefFloatDeserializer.class)
     protected Float value;
 
-    public FloatValue(String node, ValueType type, Instant timestamp, Float value) {
+    public FloatValue(String node, ValueType type, ZonedDateTime timestamp, Float value) {
         super(node, type, timestamp);
         this.value = value;
     }

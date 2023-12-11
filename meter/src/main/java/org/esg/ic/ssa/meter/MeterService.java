@@ -21,6 +21,7 @@
 package org.esg.ic.ssa.meter;
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Properties;
 import java.util.Random;
 
@@ -86,7 +87,7 @@ public class MeterService extends ServiceAdapter {
     public static void main(String [] args) throws InterruptedException {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         loggerContext.getLogger(Logger.ROOT_LOGGER_NAME).setLevel(Level.INFO);
-        //loggerContext.getLogger(GenericAdapter.class).setLevel(Level.DEBUG);
+        loggerContext.getLogger(GenericAdapter.class).setLevel(Level.DEBUG);
         
         int interval = 10000;
         
@@ -98,12 +99,12 @@ public class MeterService extends ServiceAdapter {
             	MeterPostInteraction interaction = service.registerPostKnowledgeInteraction("node_id", ValueType.POWER);
                 Random generator = new Random();
                 while (true) {
-                    Instant timestamp = Instant.now();
+                	ZonedDateTime timestamp = ZonedDateTime.now();
                     float power = generator.nextFloat() * 10000;
                     
                     interaction.post(timestamp, power);
                     
-                    long postMillis = Instant.now().toEpochMilli() - timestamp.toEpochMilli();
+                    long postMillis = Instant.now().toEpochMilli() - timestamp.toInstant().toEpochMilli();
                     if (postMillis < interval) {
                         Thread.sleep(interval - postMillis);
                     }
