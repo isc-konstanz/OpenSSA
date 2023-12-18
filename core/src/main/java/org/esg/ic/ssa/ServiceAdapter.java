@@ -62,33 +62,26 @@ public abstract class ServiceAdapter implements AutoCloseable {
 
     protected static final int TIMEOUT = 29000;
 
-    public static final String HASH = "hash";
-
     protected final GenericAdapter genericAdapter;
 
-    protected final Properties serviceProperties;
+    protected final ServiceAdapterSettings settings;
 
-    protected KnowledgeBase knowledgeBase;
-
-    public ServiceAdapter(GenericAdapter genericAdapter, Properties serviceProperties)
+    protected ServiceAdapter(GenericAdapter genericAdapter, ServiceAdapterSettings settings)
     		throws GenericAdapterException {
     	this.genericAdapter = genericAdapter;
-    	this.serviceProperties = serviceProperties;
-    	this.readKnowledgeBase();
+    	this.settings = settings;
     	this.createKnowledgeBase();
     }
 
-    public ServiceAdapter(GenericAdapter genericAdapter, String servicePropertiesFilename)
+    protected ServiceAdapter(GenericAdapter genericAdapter, Properties serviceProperties)
+    		throws GenericAdapterException {
+    	this(genericAdapter, ServiceAdapterSettings.ofProperties(serviceProperties));
+    }
+
+    protected ServiceAdapter(GenericAdapter genericAdapter, String servicePropertiesFilename)
     		throws GenericAdapterException {
     	this.genericAdapter = genericAdapter;
-    	try {
-    		serviceProperties = new Properties();
-			serviceProperties.load(getClass().getClassLoader().getResourceAsStream(servicePropertiesFilename));
-			
-		} catch (IOException e) {
-			throw new GenericAdapterException("Unable to read service properties file: " + e.getMessage());
-		}
-    	this.readKnowledgeBase();
+    	this.settings = ServiceAdapterSettings.ofProperties(getClass(), servicePropertiesFilename);
     	this.createKnowledgeBase();
     }
 
@@ -100,56 +93,16 @@ public abstract class ServiceAdapter implements AutoCloseable {
         return genericAdapter;
     }
 
-    String readHash() {
-        return serviceProperties.getProperty(String.format("%s.%s", getClass().getPackageName(), HASH));
-    }
-
-    String readKnowledgeBaseId() {
-    	return serviceProperties.getProperty(String.format("%s.%s", getClass().getPackageName(), KnowledgeBase.ID), null);
-    }
-
-    String readKnowledgeBaseName() {
-        return serviceProperties.getProperty(String.format("%s.%s", getClass().getPackageName(), KnowledgeBase.NAME));
-    }
-
-    String readKnowledgeBaseDescription() {
-        return serviceProperties.getProperty(String.format("%s.%s", getClass().getPackageName(), KnowledgeBase.DESCRIPTION));
-    }
-
-    private void readKnowledgeBase() {
-    	String knowleBaseId = readKnowledgeBaseId();
-    	if (knowleBaseId != null && !knowleBaseId.isEmpty()) {
-    		knowledgeBase = new KnowledgeBase(knowleBaseId, 
-    				readKnowledgeBaseName(), 
-    				readKnowledgeBaseDescription());
-    	}
-    }
-
-    public boolean hasKnowledgeBase() {
-        return knowledgeBase != null;
-    }
-
     public KnowledgeBase getKnowledgeBase() {
-        return knowledgeBase;
+        return settings.getKnowledgeBase();
     }
 
-    public void setKnowledgeBase(KnowledgeBase knowledgeBase) {
-        this.knowledgeBase = knowledgeBase;
-    }
-
-    public void createKnowledgeBase() throws GenericAdapterException {
-        if (!this.hasKnowledgeBase()) {
-            String knowledgeBaseId = genericAdapter.registerServiceAdapter(this.readHash());
-            this.setKnowledgeBase(new KnowledgeBase(knowledgeBaseId, 
-            		this.readKnowledgeBaseName(), 
-            		this.readKnowledgeBaseDescription()));
+    protected void createKnowledgeBase() throws GenericAdapterException {
+        if (!settings.hasKnowledgeBaseId()) {
+            String knowledgeBaseId = genericAdapter.registerServiceAdapter(settings.getHash());
+            settings.setKnowledgeBaseId(knowledgeBaseId);
         }
-        createKnowledgeBase(knowledgeBase);
-    }
-
-    @Override
-    public void close() throws GenericAdapterException {
-        deleteKnowledgeBase();
+        createKnowledgeBase(settings.getKnowledgeBase());
     }
 
     protected void createKnowledgeBase(KnowledgeBase knowledgeBase) throws GenericAdapterException {
@@ -176,6 +129,11 @@ public abstract class ServiceAdapter implements AutoCloseable {
         } catch (IOException e) {
             throw new GenericAdapterConnectionException(e);
         }
+    }
+
+    @Override
+    public void close() throws GenericAdapterException {
+        deleteKnowledgeBase();
     }
 
     protected String registerPostKnowledgeInteraction(PostKnowledgeInteraction knowledgeInteraction)

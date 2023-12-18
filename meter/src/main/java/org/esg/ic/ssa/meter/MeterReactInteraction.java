@@ -28,10 +28,10 @@ import org.esg.ic.ssa.api.BindingSet;
 import org.esg.ic.ssa.api.knowledge.ReactKnowledgeInteraction;
 import org.esg.ic.ssa.meter.data.FloatValue;
 
-public class MeterReactInteraction extends ServiceInteraction<MeterService> {
+public class MeterReactInteraction extends ServiceInteraction<MeterServiceAdapter> {
 
     public MeterReactInteraction(
-            MeterService serviceAdapter,
+            MeterServiceAdapter serviceAdapter,
             ReactKnowledgeInteraction knowledgeInteraction, 
             String knowledgeInteractionId) {
         super(serviceAdapter, knowledgeInteraction, knowledgeInteractionId);

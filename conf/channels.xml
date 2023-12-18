@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<configuration>
+  <driver id="virtual">
+    <device id="virtual">
+      <channel id="virtual_meter_power">
+        <description></description>
+        <valueType>FLOAT</valueType>
+        <unit>kW</unit>
+        <loggingInterval>15s</loggingInterval>
+        <loggingSettings>ic-ssa-meter:nodeid=virtual</loggingSettings>
+      </channel>
+    </device>
+  </driver>
+</configuration>

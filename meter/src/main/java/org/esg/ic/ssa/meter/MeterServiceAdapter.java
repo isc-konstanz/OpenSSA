@@ -28,6 +28,7 @@ import java.util.Random;
 import org.esg.ic.ssa.GenericAdapter;
 import org.esg.ic.ssa.GenericAdapterException;
 import org.esg.ic.ssa.ServiceAdapter;
+import org.esg.ic.ssa.ServiceAdapterSettings;
 import org.esg.ic.ssa.api.GraphPattern;
 import org.esg.ic.ssa.api.knowledge.PostKnowledgeInteraction;
 import org.esg.ic.ssa.api.knowledge.ReactKnowledgeInteraction;
@@ -38,19 +39,25 @@ import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 
-public class MeterService extends ServiceAdapter {
+public class MeterServiceAdapter extends ServiceAdapter {
 
 	static final String GRAPH_PATTERN = "meter.gp";
 
 	final GraphPattern graphPattern;
 
-    protected MeterService(GenericAdapter genericAdapter, String servicePropertiesFile)
+    public MeterServiceAdapter(GenericAdapter genericAdapter, ServiceAdapterSettings settings)
+    		throws GenericAdapterException {
+		super(genericAdapter, settings);
+		this.graphPattern = new GraphPattern(getClass().getClassLoader().getResourceAsStream(GRAPH_PATTERN));
+	}
+
+    private MeterServiceAdapter(GenericAdapter genericAdapter, String servicePropertiesFile)
     		throws GenericAdapterException {
 		super(genericAdapter, servicePropertiesFile);
 		this.graphPattern = new GraphPattern(getClass().getClassLoader().getResourceAsStream(GRAPH_PATTERN));
 	}
 
-    protected MeterService(GenericAdapter genericAdapter, Properties serviceProperties)
+    private MeterServiceAdapter(GenericAdapter genericAdapter, Properties serviceProperties)
     		throws GenericAdapterException {
 		super(genericAdapter, serviceProperties);
 		this.graphPattern = new GraphPattern(getClass().getClassLoader().getResourceAsStream(GRAPH_PATTERN));
@@ -72,31 +79,32 @@ public class MeterService extends ServiceAdapter {
         return new MeterPostInteraction(this, postKnowledgeInteraction, knowledgeInteractionId, node, type);
     }
 
-    public static MeterService register(GenericAdapter adapter, Properties properties) throws GenericAdapterException {
-        return new MeterService(adapter, properties);
+    public static MeterServiceAdapter register(GenericAdapter adapter, Properties properties) throws GenericAdapterException {
+        return new MeterServiceAdapter(adapter, properties);
     }
 
-    public static MeterService registerPosting(GenericAdapter adapter) throws GenericAdapterException {
-        return new MeterService(adapter, "post.properties");
+    public static MeterServiceAdapter registerPosting(GenericAdapter adapter) throws GenericAdapterException {
+        return new MeterServiceAdapter(adapter, "post.properties");
     }
 
-    public static MeterService registerReacting(GenericAdapter adapter) throws GenericAdapterException {
-        return new MeterService(adapter, "react.properties");
+    public static MeterServiceAdapter registerReacting(GenericAdapter adapter) throws GenericAdapterException {
+        return new MeterServiceAdapter(adapter, "react.properties");
     }
 
     public static void main(String [] args) throws InterruptedException {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         loggerContext.getLogger(Logger.ROOT_LOGGER_NAME).setLevel(Level.INFO);
         loggerContext.getLogger(GenericAdapter.class).setLevel(Level.DEBUG);
+        Logger logger = loggerContext.getLogger(MeterServiceAdapter.class);
         
         int interval = 10000;
         
-        GenericAdapter adapter = new GenericAdapter();
+        GenericAdapter genericAdapter = new GenericAdapter("<username>", "<password>");
         try {
-            adapter.login("<user>", "<password>");
+        	genericAdapter.login();
             
-            try (MeterService service = MeterService.registerPosting(adapter)) {
-            	MeterPostInteraction interaction = service.registerPostKnowledgeInteraction("node_id", ValueType.POWER);
+            try (MeterServiceAdapter serviceAdapter = MeterServiceAdapter.registerPosting(genericAdapter)) {
+            	MeterPostInteraction interaction = serviceAdapter.registerPostKnowledgeInteraction("demo", ValueType.POWER);
                 Random generator = new Random();
                 while (true) {
                 	ZonedDateTime timestamp = ZonedDateTime.now();
@@ -111,7 +119,7 @@ public class MeterService extends ServiceAdapter {
                 }
             }
         } catch (GenericAdapterException e) {
-            e.printStackTrace();
+        	logger.error("Error demonstrating recommender service: {}", e);
         }
     }
 

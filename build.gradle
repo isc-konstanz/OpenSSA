@@ -142,6 +142,11 @@ task javadocAll(type: Javadoc) {
         project.sourceSets.main.output })
 }
 
+task framework {
+    apply from: rootDir.getPath() + "/bundle/openmuc.gradle"
+    dependsOn updateBundles
+}
+
 task distribute(type: Tar) {
     dependsOn(distributionProjects.build)
     dependsOn(javadocAll)

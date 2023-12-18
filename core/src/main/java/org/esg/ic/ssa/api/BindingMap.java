@@ -23,7 +23,7 @@ package org.esg.ic.ssa.api;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BindingMap extends HashMap<String, String> implements Map<String, String>, Binding {
-	private static final long serialVersionUID = 5321056676886621117L;
+public class BindingMap extends HashMap<String, Object> implements Map<String, Object>, Binding {
+	private static final long serialVersionUID = 5379561131623357539L;
 
 }

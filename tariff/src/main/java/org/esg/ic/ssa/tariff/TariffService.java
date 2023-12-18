@@ -23,12 +23,13 @@ package org.esg.ic.ssa.tariff;
 import org.esg.ic.ssa.GenericAdapter;
 import org.esg.ic.ssa.GenericAdapterException;
 import org.esg.ic.ssa.ServiceAdapter;
+import org.esg.ic.ssa.ServiceAdapterSettings;
 
 public class TariffService extends ServiceAdapter {
 
-    protected TariffService(GenericAdapter genericAdapter, String servicePropertiesFile)
+    public TariffService(GenericAdapter genericAdapter, ServiceAdapterSettings settings)
     		throws GenericAdapterException {
-		super(genericAdapter, servicePropertiesFile);
+		super(genericAdapter, settings);
 		// TODO: This is a placeholder implementation and has to be filled with content
 	}
 

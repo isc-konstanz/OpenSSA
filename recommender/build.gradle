@@ -36,6 +36,6 @@ jar {
 
 eclipse {
     project {
-        name = archivesBaseName
+        name = projectName
     }
 }

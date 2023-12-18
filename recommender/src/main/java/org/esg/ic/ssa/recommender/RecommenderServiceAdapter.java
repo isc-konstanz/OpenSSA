@@ -20,12 +20,15 @@
  */
 package org.esg.ic.ssa.recommender;
 
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Properties;
 
 import org.esg.ic.ssa.GenericAdapter;
 import org.esg.ic.ssa.GenericAdapterException;
 import org.esg.ic.ssa.ServiceAdapter;
+import org.esg.ic.ssa.ServiceAdapterSettings;
 import org.esg.ic.ssa.api.GraphPattern;
 import org.esg.ic.ssa.api.GraphPrefixes;
 import org.esg.ic.ssa.api.knowledge.AskKnowledgeInteraction;
@@ -36,7 +39,7 @@ import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 
-public class RecommenderService extends ServiceAdapter {
+public class RecommenderServiceAdapter extends ServiceAdapter {
 
 	static final String GRAPH_PATTERN = "recommender.gp";
 
@@ -50,13 +53,19 @@ public class RecommenderService extends ServiceAdapter {
 
     protected final GraphPattern graphPattern;
 
-    protected RecommenderService(GenericAdapter genericAdapter)
+    public RecommenderServiceAdapter(GenericAdapter genericAdapter, ServiceAdapterSettings settings)
+    		throws GenericAdapterException {
+		super(genericAdapter, settings);
+		this.graphPattern = new GraphPattern(graphPrefixes, getClass().getClassLoader().getResourceAsStream(GRAPH_PATTERN));
+    }
+
+    private RecommenderServiceAdapter(GenericAdapter genericAdapter)
     		throws GenericAdapterException {
 		super(genericAdapter);
 		this.graphPattern = new GraphPattern(graphPrefixes, getClass().getClassLoader().getResourceAsStream(GRAPH_PATTERN));
 	}
 
-    protected RecommenderService(GenericAdapter genericAdapter, Properties serviceProperties)
+    private RecommenderServiceAdapter(GenericAdapter genericAdapter, Properties serviceProperties)
     		throws GenericAdapterException {
 		super(genericAdapter, serviceProperties);
 		this.graphPattern = new GraphPattern(graphPrefixes, getClass().getClassLoader().getResourceAsStream(GRAPH_PATTERN));
@@ -70,35 +79,38 @@ public class RecommenderService extends ServiceAdapter {
         return new RecommenderAskInteraction(this, askKnowledgeInteraction, knowledgeInteractionId, countryCode, zipCode);
     }
 
-    public static RecommenderService register(GenericAdapter adapter, Properties properties) throws GenericAdapterException {
-        return new RecommenderService(adapter, properties);
+    public static RecommenderServiceAdapter register(GenericAdapter adapter, Properties properties) throws GenericAdapterException {
+        return new RecommenderServiceAdapter(adapter, properties);
     }
 
-    public static RecommenderService registerAsking(GenericAdapter adapter) throws GenericAdapterException {
-        return new RecommenderService(adapter);
+    public static RecommenderServiceAdapter registerAsking(GenericAdapter adapter) throws GenericAdapterException {
+        return new RecommenderServiceAdapter(adapter);
     }
 
     public static void main(String [] args) throws InterruptedException {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         loggerContext.getLogger(Logger.ROOT_LOGGER_NAME).setLevel(Level.INFO);
         loggerContext.getLogger(GenericAdapter.class).setLevel(Level.DEBUG);
-        
-        GenericAdapter adapter = new GenericAdapter();
-        try {
-            adapter.login("<user>", "<password>");
-            String countryCode = "<iso3166>";
-            int zipCode = 0;
+        Logger logger = loggerContext.getLogger(RecommenderServiceAdapter.class);
 
-            try (RecommenderService service = RecommenderService.registerAsking(adapter)) {
+        GenericAdapter genericAdapter = new GenericAdapter("<username>", "<password>");
+        try {
+        	genericAdapter.login();
+
+            String countryCode = "<DE>";
+            Integer zipCode = 78467;
+
+            try (RecommenderServiceAdapter service = RecommenderServiceAdapter.registerAsking(genericAdapter)) {
             	RecommenderAskInteraction interaction = service.registerAskKnowledgeInteraction(countryCode, zipCode);
-                List<Recommendation> recommendation = interaction.ask(
-                        "yyyy-MM-ddThh:mm:ssZ",
-                        "yyyy-MM-ddThh:mm:ssZ"
-                );
-                System.out.println(recommendation);
+            	
+            	ZonedDateTime startDateTime = ZonedDateTime.now().truncatedTo(ChronoUnit.HOURS).plusHours(1);
+            	ZonedDateTime endDateTime = startDateTime.plusDays(1);
+            	
+                List<Recommendation> recommendation = interaction.ask(startDateTime, endDateTime);
+                logger.info(recommendation.toString());
             }
         } catch (GenericAdapterException e) {
-        	System.err.println(e);
+        	logger.error("Error demonstrating recommender service: {}", e);
         }
     }
 }

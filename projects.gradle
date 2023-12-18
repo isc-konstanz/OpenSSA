@@ -22,7 +22,7 @@ project.ext {
 
     projectVersion = '0.1.0'
 
-    projectGroup = 'de.kn.isc'
+    projectGroup = 'org.esg.ic'
 
     projectVendor = 'ISC Konstanz e.V.'
     projectHomepage = 'https://isc-konstanz.de'
@@ -35,8 +35,10 @@ project.ext {
         it.getPath() == ':core' ||
         it.getPath() == ':meter' ||
         it.getPath() == ':stimulus' ||
-        it.getPath() == ':tariff'||
-        it.getPath() == ':recommender'
+        it.getPath() == ':tariff' ||
+        it.getPath() == ':recommender' ||
+        it.getPath() == ':openmuc-lib-ssa' ||
+        it.getPath() == ':openmuc-datalogger-ssa'
     }
 
     javadocProjects = distributionProjects.findAll {

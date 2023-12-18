@@ -37,8 +37,15 @@ local.properties
 *.settings/
 *.md.html
 
-#Gradle
+# Gradle
 *.gradletasknamecache
 *.gradle/
 build/
 /build/
+
+# Framework
+/cache/
+/conf/shadow
+/conf/install/
+/libs/*.jar
+/log/

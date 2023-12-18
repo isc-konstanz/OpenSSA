@@ -29,8 +29,9 @@ import org.esg.ic.ssa.GenericAdapterConnectionException;
 import org.esg.ic.ssa.GenericAdapterException;
 import org.esg.ic.ssa.GenericAdapterTimeoutException;
 import org.esg.ic.ssa.ServiceAdapter;
+import org.esg.ic.ssa.ServiceAdapterSettings;
 import org.esg.ic.ssa.meter.MeterReactInteraction;
-import org.esg.ic.ssa.meter.MeterService;
+import org.esg.ic.ssa.meter.MeterServiceAdapter;
 import org.esg.ic.ssa.meter.data.FloatValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,11 +39,11 @@ import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 
-public class StimulusService extends ServiceAdapter {
+public class StimulusServiceAdapter extends ServiceAdapter {
 
-    protected StimulusService(GenericAdapter genericAdapter, String servicePropertiesFile)
+    public StimulusServiceAdapter(GenericAdapter genericAdapter, ServiceAdapterSettings settings)
     		throws GenericAdapterException {
-		super(genericAdapter, servicePropertiesFile);
+		super(genericAdapter, settings);
 		// TODO: This is a placeholder implementation and has to be filled with content
 	}
 
@@ -50,13 +51,13 @@ public class StimulusService extends ServiceAdapter {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         loggerContext.getLogger(Logger.ROOT_LOGGER_NAME).setLevel(Level.INFO);
         loggerContext.getLogger(GenericAdapter.class).setLevel(Level.DEBUG);
-        Logger logger = loggerContext.getLogger(StimulusService.class);
-        
-        GenericAdapter adapter = new GenericAdapter();
+        Logger logger = loggerContext.getLogger(StimulusServiceAdapter.class);
+
+        GenericAdapter genericAdapter = new GenericAdapter("<username>", "<password>");
         try {
-            adapter.login("<user>", "<password>");
+        	genericAdapter.login();
             
-            try (MeterService service = MeterService.registerReacting(adapter)) {
+            try (MeterServiceAdapter service = MeterServiceAdapter.registerReacting(genericAdapter)) {
             	MeterReactInteraction interaction = service.registerReactKnowledgeInteraction();
                 //TariffingService tariffService = adapter.register(TariffingService.class);
                 while (true) {

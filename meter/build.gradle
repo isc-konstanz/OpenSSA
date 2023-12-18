@@ -31,11 +31,11 @@ dependencies {
 jar {
     bnd('Bundle-Name':        projectFullName,
         'Bundle-Description': projectDescription,
-        'Export-Package':   'org.esg.ic.ssa.meter.*')
+        'Export-Package':     'org.esg.ic.ssa.meter.*')
 }
 
 eclipse {
     project {
-        name = archivesBaseName
+        name = projectName
     }
 }

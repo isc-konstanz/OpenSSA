@@ -20,6 +20,8 @@
  */
 package org.esg.ic.ssa.recommender;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.esg.ic.ssa.GenericAdapterException;
@@ -28,13 +30,13 @@ import org.esg.ic.ssa.api.BindingMap;
 import org.esg.ic.ssa.api.knowledge.AskKnowledgeInteraction;
 import org.esg.ic.ssa.recommender.dto.Recommendation;
 
-public class RecommenderAskInteraction extends ServiceInteraction<RecommenderService> {
+public class RecommenderAskInteraction extends ServiceInteraction<RecommenderServiceAdapter> {
 
     private final String countryCode;
     private final int zipCode;
 
     public RecommenderAskInteraction(
-    		RecommenderService serviceAdapter,
+    		RecommenderServiceAdapter serviceAdapter,
             AskKnowledgeInteraction knowledgeInteraction, 
             String knowledgeInteractionId,
             String countryCode,
@@ -45,13 +47,15 @@ public class RecommenderAskInteraction extends ServiceInteraction<RecommenderSer
     }
 
     public List<Recommendation> ask(
-            String startDateTime,
-            String endDateTime) throws GenericAdapterException {
+            ZonedDateTime startDateTime,
+            ZonedDateTime endDateTime) throws GenericAdapterException {
+    	
+    	DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
     	
         BindingMap binding = new BindingMap();
         binding.put("country_code",   "<" + countryCode + ">");
-        binding.put("start_datetime", "<" + startDateTime + ">");
-        binding.put("end_datetime",   "<" + endDateTime + ">");
+        binding.put("start_datetime", "<" + startDateTime.format(dateTimeFormatter) + ">");
+        binding.put("end_datetime",   "<" + endDateTime.format(dateTimeFormatter) + ">");
 //        binding.put("zip_code",       "<" + zipCode + ">");
         
 //        if (!serviceAdapter.graphPattern.validateBinding(binding)) {

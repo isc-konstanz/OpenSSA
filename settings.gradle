@@ -18,6 +18,7 @@
  * along with OpenSSA. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-include 'core', 'meter', 'stimulus', 'tariff', 'recommendation'
+include 'core', 'meter', 'stimulus', 'tariff', 'recommendation', 'openmuc-lib-ssa', 'openmuc-datalogger-ssa'
 
-//project(':bundle').projectDir = file('bundle/openmuc')
+project(':openmuc-lib-ssa').projectDir = file('bundle/openmuc-lib-ssa')
+project(':openmuc-datalogger-ssa').projectDir = file('bundle/openmuc-datalogger-ssa')

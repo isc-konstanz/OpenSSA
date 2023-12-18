@@ -23,6 +23,8 @@ project.ext {
     projectFullName = 'EasySmartGrid InterConnect Core ServiceSpecificAdapter'
     projectDescription = 'The Service Specific Adapter core library for the InterConnect Project'
 }
+configurations.create('embed')
+
 def jacksonVersion = '2.16.0'
 def apacheHttpVersion = '4.5.14'
 def apacheJenaVersion = '3.17.0'
@@ -36,18 +38,31 @@ dependencies {
     api group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: jacksonVersion
     api group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
     api group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: jacksonVersion
+
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: apacheHttpVersion
     implementation group: 'org.apache.jena', name: 'apache-jena-libs', version: apacheJenaVersion
+
+    embed group: 'org.apache.httpcomponents', name: 'httpclient', version: apacheHttpVersion
+    embed group: 'org.apache.jena', name: 'apache-jena-libs', version: apacheJenaVersion
+}
+
+def embed = configurations.embed.findAll {
+    !it.getName().matches("(slf4j|logback|jackson).*")
 }
 
 jar {
+    into('libs') {
+        from embed
+    }
     bnd('Bundle-Name':        projectFullName,
         'Bundle-Description': projectDescription,
-        'Export-Package':   'org.esg.ic.ssa.*')
+        'Bundle-ClassPath':   '.,' + embed.collect { 'libs/'+it.getName() }.join(','),
+        'Import-Package':     'org.slf4j.*,com.fasterxml.jackson.*,javax.*,org.w3c.*,org.xml.*',
+        'Export-Package':     'org.esg.ic.ssa.*')
 }
 
 eclipse {
     project {
-        name = archivesBaseName
+        name = projectName
     }
 }

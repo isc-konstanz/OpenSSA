@@ -25,10 +25,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 public class KnowledgeBase {
 
-    public final static String ID = "knowledgeBaseId";
-    public final static String NAME = "knowledgeBaseName";
-    public final static String DESCRIPTION = "knowledgeBaseDescription";
-
     public String knowledgeBaseId;
     public String knowledgeBaseName;
     public String knowledgeBaseDescription;

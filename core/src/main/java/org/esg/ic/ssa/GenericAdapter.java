@@ -57,24 +57,40 @@ public class GenericAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(GenericAdapter.class);
 
-    private static final String DEFAULT_HOST = "http://localhost";
-    private static final int DEFAULT_PORT = 9090;
+    protected GenericAdapterSettings settings;
 
-    private final String genericAdapterURL;
-
-    public GenericAdapter() {
-        this(DEFAULT_HOST, DEFAULT_PORT);
+    protected GenericAdapter() {
     }
 
-    public GenericAdapter(String genericAdapterHost, int genericAdapterPort) {
-        this.genericAdapterURL = genericAdapterHost + ":" + genericAdapterPort;
+    public GenericAdapter(GenericAdapterSettings settings) {
+        this.settings = settings;
     }
 
-    public String getGenericAdapterURL() {
-        return genericAdapterURL;
+    public GenericAdapter(String username, String password) {
+        this(new GenericAdapterSettings(username, password));
     }
 
-    public void login(String user, String password) throws GenericAdapterException {
+    public GenericAdapterSettings getSettings() {
+        return settings;
+    }
+
+    public String getURL() {
+        return settings.getHost() + ":" + settings.getPort();
+    }
+
+    public String getHost() {
+        return settings.getHost();
+    }
+
+    public int getPort() {
+        return settings.getPort();
+    }
+
+    public void login() throws GenericAdapterException {
+    	this.login(settings.getUsername(), settings.getPassword());
+    }
+
+    private void login(String user, String password) throws GenericAdapterException {
         LoginForm loginForm = new LoginForm(user, password);
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
@@ -108,7 +124,7 @@ public class GenericAdapter {
 
     HttpGet buildHttpGet(String uri) throws GenericAdapterException {
         try {
-            URIBuilder uriBuilder = new URIBuilder(this.genericAdapterURL + uri);
+            URIBuilder uriBuilder = new URIBuilder(this.getURL() + uri);
             HttpGet httpGet = new HttpGet(uriBuilder.build());
             httpGet.setHeader("Accept", "*/*");
             httpGet.setHeader("Content-type", "application/json");
@@ -122,7 +138,7 @@ public class GenericAdapter {
 
     HttpPost buildHttpPost(String uri) throws GenericAdapterException {
         try {
-            URIBuilder uriBuilder = new URIBuilder(this.genericAdapterURL + uri);
+            URIBuilder uriBuilder = new URIBuilder(this.getURL() + uri);
             HttpPost httpPost = new HttpPost(uriBuilder.build());
             httpPost.setHeader("Accept", "*/*");
             httpPost.setHeader("Content-type", "application/json");
@@ -136,7 +152,7 @@ public class GenericAdapter {
 
     HttpDelete buildHttpDelete(String uri) throws GenericAdapterException {
         try {
-            URIBuilder uriBuilder = new URIBuilder(this.genericAdapterURL + uri);
+            URIBuilder uriBuilder = new URIBuilder(this.getURL() + uri);
             HttpDelete httpDelete = new HttpDelete(uriBuilder.build());
             httpDelete.setHeader("Accept", "*/*");
             httpDelete.setHeader("Content-type", "application/json");
