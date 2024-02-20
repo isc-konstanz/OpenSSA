@@ -38,6 +38,7 @@ project.ext {
         it.getPath() == ':tariff' ||
         it.getPath() == ':recommender' ||
         it.getPath() == ':openmuc-lib-ssa' ||
+        it.getPath() == ':openmuc-driver-ssa' ||
         it.getPath() == ':openmuc-datalogger-ssa'
     }
 

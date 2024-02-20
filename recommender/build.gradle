@@ -31,7 +31,7 @@ dependencies {
 jar {
     bnd('Bundle-Name':        projectFullName,
         'Bundle-Description': projectDescription,
-        'Export-Package':   'org.esg.ic.ssa.recommender.*')
+        'Export-Package':     'org.esg.ic.ssa.recommender.*')
 }
 
 eclipse {
