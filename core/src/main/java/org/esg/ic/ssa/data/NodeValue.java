@@ -38,10 +38,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public abstract class NodeValue implements Binding {
 	private static final long serialVersionUID = -1261490748515092272L;
 
-	private static final String ADDRESS = "http://interconnectproject.eu/pilots/esg";
+	private static final String SAREF_PREFIX = "https://ontology.easysg.de/interconnect/";
 
-    @JsonSerialize(using = SarefAddressSerializer.class)
-    @JsonDeserialize(using = SarefAddressDeserializer.class)
+    @JsonSerialize(using = SarefStringSerializer.class)
+    @JsonDeserialize(using = SarefStringDeserializer.class)
     protected String node;
 
     protected NodeValue(String node) {
@@ -70,9 +70,35 @@ public abstract class NodeValue implements Binding {
         }
     }
 
-    public static class SarefAddressSerializer extends JsonSerializer<String> {
+    public static class SarefStringSerializer extends JsonSerializer<String> {
 
-        public SarefAddressSerializer() {
+        public SarefStringSerializer() {
+            super();
+        }
+
+        @Override
+        public void serialize(String value, JsonGenerator generator, SerializerProvider provider) 
+    		    throws IOException, JsonProcessingException {
+            generator.writeString(String.format("<%s>", value));
+        }
+    }
+
+    public static class SarefStringDeserializer extends JsonDeserializer<String> {
+
+        public SarefStringDeserializer() {
+            super();
+        }
+
+		@Override
+		public String deserialize(JsonParser parser, DeserializationContext context) throws
+				IOException, JsonProcessingException {
+			return parser.getText().replace("<", "").replace(">", "").replace("\"", "");
+		}
+    }
+
+    public static class SarefPrefixSerializer extends JsonSerializer<String> {
+
+        public SarefPrefixSerializer() {
             super();
         }
 
@@ -80,13 +106,13 @@ public abstract class NodeValue implements Binding {
         public void serialize(String value, JsonGenerator generator, SerializerProvider provider) 
     		    throws IOException, JsonProcessingException {
         	String valueName = generator.getOutputContext().getCurrentName();
-            generator.writeNumber('"' + String.format("<%s/%s#%s>", ADDRESS, valueName, value) + '"');
+            generator.writeString(String.format("<%s/%s#%s>", SAREF_PREFIX, valueName, value));
         }
     }
 
-    public static class SarefAddressDeserializer extends JsonDeserializer<String> {
+    public static class SarefPrefixDeserializer extends JsonDeserializer<String> {
 
-        public SarefAddressDeserializer() {
+        public SarefPrefixDeserializer() {
             super();
         }
 
@@ -95,7 +121,7 @@ public abstract class NodeValue implements Binding {
 				IOException, JsonProcessingException {
         	String valueName = parser.getCurrentName();
 			return parser.getText()
-					.replace(ADDRESS + "/", "")
+					.replace(SAREF_PREFIX + "/", "")
 					.replace(valueName + "#", "")
 					.replace("<", "").replace(">", "")
 					.replace("\"", "");

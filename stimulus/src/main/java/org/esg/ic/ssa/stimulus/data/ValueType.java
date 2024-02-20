@@ -16,26 +16,12 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with OpenSSA. If not, see <http://www.gnu.org/licenses/>.
+ *
  */
-archivesBaseName = 'esg-ic-ssa-stimulus'
-project.ext {
-    projectName = 'InterConnect-SSA-Stimulus'
-    projectFullName = 'InterConnect Stimulus ServiceSpecificAdapter'
-    projectDescription = 'The Service Specific Adapter for stimulis of the InterConnect Project'
-}
+package org.esg.ic.ssa.stimulus.data;
 
-dependencies {
-    api project(':core')
-}
+public enum ValueType {
 
-jar {
-    bnd('Bundle-Name':        projectFullName,
-        'Bundle-Description': projectDescription,
-        'Export-Package':   'org.esg.ic.ssa.stimulus.*')
-}
+    PERCENT;
 
-eclipse {
-    project {
-        name = projectName
-    }
 }

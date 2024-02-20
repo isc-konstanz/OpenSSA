@@ -18,7 +18,7 @@
  * along with OpenSSA. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package org.esg.ic.ssa.meter.data;
+package org.esg.ic.ssa.stimulus.data;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -34,21 +34,19 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-public class FloatValue extends NumberValue {
-	private static final long serialVersionUID = -3670500688639349147L;
-
-	private static final String SAREF_SUFFIX = "^^xsd:float";
+public class PercentValue extends NumberValue {
+	private static final long serialVersionUID = -8292291133720480580L;
 
 	@JsonSerialize(using = SarefFloatSerializer.class)
     @JsonDeserialize(using = SarefFloatDeserializer.class)
     protected Float value;
 
-    public FloatValue(String node, ValueType type, ZonedDateTime timestamp, Float value) {
-        super(node, type, timestamp);
+    public PercentValue(String node, ZonedDateTime timestamp, Float value) {
+        super(node, ValueType.PERCENT, timestamp);
         this.value = value;
     }
 
-    public FloatValue() {
+    public PercentValue() {
     	super();
     }
 
@@ -70,10 +68,9 @@ public class FloatValue extends NumberValue {
         public void serialize(Float value, JsonGenerator generator, SerializerProvider provider) 
                 throws IOException, JsonProcessingException {
         	StringBuilder jsonBuilder = new StringBuilder();
-        	jsonBuilder.append('"');
+        	jsonBuilder.append('<');
         	jsonBuilder.append(String.format(Locale.US, "%.3f", value));
-        	jsonBuilder.append('"');
-        	jsonBuilder.append(SAREF_SUFFIX);
+        	jsonBuilder.append('>');
             generator.writeString(jsonBuilder.toString());
         }
     }
@@ -87,7 +84,7 @@ public class FloatValue extends NumberValue {
 		@Override
 		public Float deserialize(JsonParser parser, DeserializationContext context) throws
 				IOException, JsonProcessingException {
-	        String floatStr = parser.getText().replace(SAREF_SUFFIX, "").replaceAll("\"", "");
+	        String floatStr = parser.getText().replaceAll("<", "").replaceAll(">", "");
 	        return Float.valueOf(floatStr);
 		}
     }

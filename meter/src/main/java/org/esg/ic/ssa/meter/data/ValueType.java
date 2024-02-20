@@ -33,10 +33,6 @@ public enum ValueType {
         this.unit = unit;
     }
 
-    public String getSuffix() {
-    	return String.format("_%s", name().toLowerCase());
-    }
-
     public String getType() {
         return type;
     }

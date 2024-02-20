@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 
 import org.esg.ic.ssa.GenericAdapter;
 import org.esg.ic.ssa.GenericAdapterException;
-import org.esg.ic.ssa.GenericAdapterSettings;
 import org.esg.ic.ssa.ServiceAdapter;
 import org.esg.ic.ssa.ServiceAdapterSettings;
 import org.esg.ic.ssa.api.GraphPattern;

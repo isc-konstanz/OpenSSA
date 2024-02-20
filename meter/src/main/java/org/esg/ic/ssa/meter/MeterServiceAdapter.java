@@ -103,8 +103,8 @@ public class MeterServiceAdapter extends ServiceAdapter {
         try {
         	genericAdapter.login();
             
-            try (MeterServiceAdapter serviceAdapter = MeterServiceAdapter.registerPosting(genericAdapter)) {
-            	MeterPostInteraction interaction = serviceAdapter.registerPostKnowledgeInteraction("demo", ValueType.POWER);
+            try (MeterServiceAdapter service = MeterServiceAdapter.registerPosting(genericAdapter)) {
+            	MeterPostInteraction interaction = service.registerPostKnowledgeInteraction("demo", ValueType.POWER);
                 Random generator = new Random();
                 while (true) {
                 	ZonedDateTime timestamp = ZonedDateTime.now();
@@ -119,7 +119,7 @@ public class MeterServiceAdapter extends ServiceAdapter {
                 }
             }
         } catch (GenericAdapterException e) {
-        	logger.error("Error demonstrating recommender service: {}", e);
+        	logger.error("Error demonstrating meter service: {}", e);
         }
     }
 

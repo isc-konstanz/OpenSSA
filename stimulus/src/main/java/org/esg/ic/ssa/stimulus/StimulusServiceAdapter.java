@@ -20,19 +20,18 @@
  */
 package org.esg.ic.ssa.stimulus;
 
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Locale;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.util.Properties;
+import java.util.Random;
 
 import org.esg.ic.ssa.GenericAdapter;
-import org.esg.ic.ssa.GenericAdapterConnectionException;
 import org.esg.ic.ssa.GenericAdapterException;
-import org.esg.ic.ssa.GenericAdapterTimeoutException;
 import org.esg.ic.ssa.ServiceAdapter;
 import org.esg.ic.ssa.ServiceAdapterSettings;
-import org.esg.ic.ssa.meter.MeterReactInteraction;
-import org.esg.ic.ssa.meter.MeterServiceAdapter;
-import org.esg.ic.ssa.meter.data.FloatValue;
+import org.esg.ic.ssa.api.GraphPattern;
+import org.esg.ic.ssa.api.knowledge.PostKnowledgeInteraction;
+import org.esg.ic.ssa.api.knowledge.ReactKnowledgeInteraction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,11 +40,55 @@ import ch.qos.logback.classic.LoggerContext;
 
 public class StimulusServiceAdapter extends ServiceAdapter {
 
+	static final String GRAPH_PATTERN = "stimulus.gp";
+
+	final GraphPattern graphPattern;
+
     public StimulusServiceAdapter(GenericAdapter genericAdapter, ServiceAdapterSettings settings)
     		throws GenericAdapterException {
 		super(genericAdapter, settings);
-		// TODO: This is a placeholder implementation and has to be filled with content
+		this.graphPattern = new GraphPattern(getClass().getClassLoader().getResourceAsStream(GRAPH_PATTERN));
 	}
+
+    private StimulusServiceAdapter(GenericAdapter genericAdapter, String servicePropertiesFile)
+    		throws GenericAdapterException {
+		super(genericAdapter, servicePropertiesFile);
+		this.graphPattern = new GraphPattern(getClass().getClassLoader().getResourceAsStream(GRAPH_PATTERN));
+	}
+
+    private StimulusServiceAdapter(GenericAdapter genericAdapter, Properties serviceProperties)
+    		throws GenericAdapterException {
+		super(genericAdapter, serviceProperties);
+		this.graphPattern = new GraphPattern(getClass().getClassLoader().getResourceAsStream(GRAPH_PATTERN));
+	}
+
+    public StimulusReactInteraction registerReactKnowledgeInteraction()
+    		throws GenericAdapterException {
+        ReactKnowledgeInteraction reactKnowledgeInteraction = new ReactKnowledgeInteraction(graphPattern);
+
+        String knowledgeInteractionId = registerReactKnowledgeInteraction(reactKnowledgeInteraction);
+        return new StimulusReactInteraction(this, reactKnowledgeInteraction, knowledgeInteractionId);
+    }
+
+    public StimulusPostInteraction registerPostKnowledgeInteraction(String node) 
+    		throws GenericAdapterException {
+        PostKnowledgeInteraction postKnowledgeInteraction = new PostKnowledgeInteraction(graphPattern);
+        
+        String knowledgeInteractionId = registerPostKnowledgeInteraction(postKnowledgeInteraction);
+        return new StimulusPostInteraction(this, postKnowledgeInteraction, knowledgeInteractionId, node);
+    }
+
+    public static StimulusServiceAdapter register(GenericAdapter adapter, Properties properties) throws GenericAdapterException {
+        return new StimulusServiceAdapter(adapter, properties);
+    }
+
+    public static StimulusServiceAdapter registerPosting(GenericAdapter adapter) throws GenericAdapterException {
+        return new StimulusServiceAdapter(adapter, "post.properties");
+    }
+
+    public static StimulusServiceAdapter registerReacting(GenericAdapter adapter) throws GenericAdapterException {
+        return new StimulusServiceAdapter(adapter, "react.properties");
+    }
 
     public static void main(String [] args) throws InterruptedException {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -56,29 +99,26 @@ public class StimulusServiceAdapter extends ServiceAdapter {
         GenericAdapter genericAdapter = new GenericAdapter("<username>", "<password>");
         try {
         	genericAdapter.login();
+        	
+        	int interval = 10000;
             
-            try (MeterServiceAdapter service = MeterServiceAdapter.registerReacting(genericAdapter)) {
-            	MeterReactInteraction interaction = service.registerReactKnowledgeInteraction();
-                //TariffingService tariffService = adapter.register(TariffingService.class);
+            try (StimulusServiceAdapter service = StimulusServiceAdapter.registerReacting(genericAdapter)) {
+            	StimulusPostInteraction interaction = service.registerPostKnowledgeInteraction("demo");
+                Random generator = new Random();
                 while (true) {
-                	try {
-                    	List<FloatValue> values = interaction.react();
-                    	if (values.size() > 0) {
-                    		for (FloatValue value : values) {
-                            	logger.info("{}: {}",
-                            			DateTimeFormatter.ISO_INSTANT.format(value.getTimestamp()), 
-                            			String.format(Locale.US, "%.3f", value.getValue()));
-                    		}
-                    	}
-                	} catch (GenericAdapterTimeoutException e) {
-                		// Continue to wait for power values
-                	} catch (GenericAdapterConnectionException e) {
-                        e.printStackTrace();
-                	}
+                	ZonedDateTime timestamp = ZonedDateTime.now();
+                    float percent = generator.nextFloat() * 100;
+                    
+                    interaction.post(timestamp, percent);
+                    
+                    long postMillis = Instant.now().toEpochMilli() - timestamp.toInstant().toEpochMilli();
+                    if (postMillis < interval) {
+                        Thread.sleep(interval - postMillis);
+                    }
                 }
             }
         } catch (GenericAdapterException e) {
-            e.printStackTrace();
+        	logger.error("Error demonstrating meter service: {}", e);
         }
     }
 
