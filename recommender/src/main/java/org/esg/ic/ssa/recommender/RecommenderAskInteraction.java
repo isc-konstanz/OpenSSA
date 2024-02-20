@@ -20,43 +20,51 @@
  */
 package org.esg.ic.ssa.recommender;
 
+import static java.time.temporal.ChronoField.HOUR_OF_DAY;
+import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
+
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.List;
 
 import org.esg.ic.ssa.GenericAdapterException;
 import org.esg.ic.ssa.ServiceInteraction;
 import org.esg.ic.ssa.api.BindingMap;
 import org.esg.ic.ssa.api.knowledge.AskKnowledgeInteraction;
-import org.esg.ic.ssa.recommender.dto.Recommendation;
+import org.esg.ic.ssa.recommender.data.Recommendation;
 
 public class RecommenderAskInteraction extends ServiceInteraction<RecommenderServiceAdapter> {
 
     private final String countryCode;
-    private final int zipCode;
 
     public RecommenderAskInteraction(
     		RecommenderServiceAdapter serviceAdapter,
             AskKnowledgeInteraction knowledgeInteraction, 
             String knowledgeInteractionId,
-            String countryCode,
-            int zipCode) {
+            String countryCode) {
         super(serviceAdapter, knowledgeInteraction, knowledgeInteractionId);
         this.countryCode = countryCode;
-        this.zipCode = zipCode;
     }
 
     public List<Recommendation> ask(
             ZonedDateTime startDateTime,
             ZonedDateTime endDateTime) throws GenericAdapterException {
     	
-    	DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+    	DateTimeFormatter dateTimeFormatter = new DateTimeFormatterBuilder()
+                .parseCaseInsensitive()
+                .append(DateTimeFormatter.ISO_LOCAL_DATE)
+                .appendLiteral('T')
+                .appendValue(HOUR_OF_DAY, 2)
+                .appendLiteral(':')
+                .appendValue(MINUTE_OF_HOUR, 2)
+                .toFormatter();
     	
         BindingMap binding = new BindingMap();
         binding.put("country_code",   "<" + countryCode + ">");
-        binding.put("start_datetime", "<" + startDateTime.format(dateTimeFormatter) + ">");
-        binding.put("end_datetime",   "<" + endDateTime.format(dateTimeFormatter) + ">");
-//        binding.put("zip_code",       "<" + zipCode + ">");
+        binding.put("start_datetime", "<" + startDateTime.withZoneSameInstant(ZoneOffset.UTC).format(dateTimeFormatter) + ">");
+        binding.put("end_datetime",   "<" + endDateTime.withZoneSameInstant(ZoneOffset.UTC).format(dateTimeFormatter) + ">");
         
 //        if (!serviceAdapter.graphPattern.validateBinding(binding)) {
 //            throw new GenericAdapterException("Invalid binding to graph pattern: " + binding);
