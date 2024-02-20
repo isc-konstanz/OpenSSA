@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.XSD;
 import org.esg.ic.ssa.GenericAdapter;
 import org.esg.ic.ssa.GenericAdapterException;
 import org.esg.ic.ssa.GenericAdapterSettings;
@@ -55,9 +53,9 @@ public class RecommenderServiceAdapter extends ServiceAdapter {
 	        .setNsPrefix("ic-data", "http://ontology.tno.nl/interconnect/datapoint#")
             .setNsPrefix("time",    "http://www.w3.org/2006/time#")
             .setNsPrefix("saref",   "https://saref.etsi.org/corehasTime")
+            .setNsPrefix("rdf",     "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
 	        .setNsPrefix("iso3166", "http://purl.org/dc/terms/ISO3166")
-            .setNsPrefix("rdf",     RDF.getURI())
-            .setNsPrefix("xsd",     XSD.getURI());
+            .setNsPrefix("xsd",     "http://www.w3.org/2001/XMLSchema#");
 
     protected final GraphPattern graphPattern;
 

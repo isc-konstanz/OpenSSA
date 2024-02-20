@@ -54,7 +54,7 @@ public abstract class TimeValue extends NodeValue {
 
     protected String unit;
 
-    @JsonSerialize(using = SarefInstantSerializer.class)
+    @JsonSerialize(using = SarefDateTimeSerializer.class)
     @JsonDeserialize(using = SarefDateTimeDeserializer.class)
     protected ZonedDateTime timestamp;
 
@@ -122,9 +122,9 @@ public abstract class TimeValue extends NodeValue {
         }
     }
 
-    static class SarefInstantSerializer extends JsonSerializer<ZonedDateTime> {
+    static class SarefDateTimeSerializer extends JsonSerializer<ZonedDateTime> {
 
-        public SarefInstantSerializer() {
+        public SarefDateTimeSerializer() {
             super();
         }
 
@@ -138,7 +138,7 @@ public abstract class TimeValue extends NodeValue {
         	jsonBuilder.append('\\').append('"');
         	jsonBuilder.append(SAREF_SUFFIX);
         	jsonBuilder.append('"');
-            generator.writeNumber(jsonBuilder.toString());
+            generator.writeString(jsonBuilder.toString());
         }
     }
 

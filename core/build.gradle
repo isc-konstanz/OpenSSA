@@ -39,11 +39,12 @@ dependencies {
     api group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
     api group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: jacksonVersion
 
+    api group: 'org.apache.jena', name: 'apache-jena-libs', version: apacheJenaVersion
+
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: apacheHttpVersion
-    implementation group: 'org.apache.jena', name: 'apache-jena-libs', version: apacheJenaVersion
 
     embed group: 'org.apache.httpcomponents', name: 'httpclient', version: apacheHttpVersion
-    embed group: 'org.apache.jena', name: 'apache-jena-libs', version: apacheJenaVersion
+    //embed group: 'org.apache.jena', name: 'apache-jena-libs', version: apacheJenaVersion
 }
 
 def embed = configurations.embed.findAll {
@@ -57,7 +58,7 @@ jar {
     bnd('Bundle-Name':        projectFullName,
         'Bundle-Description': projectDescription,
         'Bundle-ClassPath':   '.,' + embed.collect { 'libs/'+it.getName() }.join(','),
-        'Import-Package':     'org.slf4j.*,com.fasterxml.jackson.*,javax.*,org.w3c.*,org.xml.*',
+        'Import-Package':     'org.slf4j.*,com.fasterxml.jackson.*,javax.*,org.w3c.*,org.xml.*,org.apache.jena.*',
         'Export-Package':     'org.esg.ic.ssa.*')
 }
 
