@@ -1,13 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <configuration>
-  <driver id="virtual">
-    <device id="virtual">
-      <channel id="virtual_meter_power">
+  <driver id="ic-ssa-meter">
+    <device id="grid_meter">
+	  <address>https://ke.interconnectproject.eu/adapter/be9ac33e42f1b77e68bb61f1b1a715d61506a180e445e84c32e51f65b80c34a0ab7589a33b4b76676c61589e9a54f7167383d98af0be9e4c182d2423cc47d6ff</address>
+      <channel id="grid_power">
+	    <address>duebelhoelzle</address>
         <description></description>
         <valueType>FLOAT</valueType>
-        <unit>kW</unit>
-        <loggingInterval>15s</loggingInterval>
-        <loggingSettings>ic-ssa-meter:nodeid=virtual</loggingSettings>
+        <unit>W</unit>
+		<scalingFactor>1000</scalingFactor>
+		<listening>true</listening>
+      </channel>
+    </device>
+  </driver>
+  <driver id="ic-ssa-stimulus">
+    <device id="grid_stimulus">
+	  <address>https://ke.interconnectproject.eu/adapter/09b7760903bb1336223cc350ea7364feaa750ef53c40c1ba88bb8527e4aaa946e64707ac97792f1466a3319936eb560c120abe50f977b5cb90b9a3076e3b8290</address>
+      <channel id="grid_bi">
+	    <address>duebelhoelzle</address>
+        <description></description>
+        <valueType>FLOAT</valueType>
+        <unit></unit>
+		<scalingFactor>0.01</scalingFactor>
+		<listening>true</listening>
       </channel>
     </device>
   </driver>
