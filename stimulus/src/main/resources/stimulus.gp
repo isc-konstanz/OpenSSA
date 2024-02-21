@@ -5,6 +5,6 @@
 ?stimulus rdf:type om:Measure .
 ?stimulus om:hasNumericalValue ?value .
 ?stimulus om:hasUnit ?unit .
-?unit a om:PercentageUnit .
+?unit a om:percent .
 ?data saref:hasTimestamp ?timestamp .
 ?timestamp rdf:type xsd:dateTime .

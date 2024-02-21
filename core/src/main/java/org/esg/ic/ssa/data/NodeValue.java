@@ -38,7 +38,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public abstract class NodeValue implements Binding {
 	private static final long serialVersionUID = -1261490748515092272L;
 
-	private static final String SAREF_PREFIX = "https://ontology.easysg.de/interconnect/";
+	private static final String SAREF_PREFIX = "https://ontology.easysg.de/interconnect";
 
     @JsonSerialize(using = SarefStringSerializer.class)
     @JsonDeserialize(using = SarefStringDeserializer.class)

@@ -22,6 +22,16 @@ package org.esg.ic.ssa.stimulus.data;
 
 public enum ValueType {
 
-    PERCENT;
+    PERCENT("<http://www.ontology-of-units-of-measure.org/resource/om-2/percent>");
+
+    private final String unit;
+
+    private ValueType(String unit) {
+        this.unit = unit;
+    }
+
+    public String getUnit() {
+        return unit;
+    };
 
 }

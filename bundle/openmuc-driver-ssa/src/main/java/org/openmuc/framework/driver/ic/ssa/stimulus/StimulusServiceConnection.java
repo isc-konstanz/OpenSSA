@@ -18,7 +18,7 @@
  * along with OpenMUC.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package org.openmuc.framework.driver.ic.ssa.meter;
+package org.openmuc.framework.driver.ic.ssa.stimulus;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -32,13 +32,14 @@ import org.esg.ic.ssa.GenericAdapter;
 import org.esg.ic.ssa.GenericAdapterException;
 import org.esg.ic.ssa.GenericAdapterTimeoutException;
 import org.esg.ic.ssa.ServiceAdapterSettings;
-import org.esg.ic.ssa.meter.MeterReactInteraction;
-import org.esg.ic.ssa.meter.MeterServiceAdapter;
-import org.esg.ic.ssa.meter.data.FloatValue;
+import org.esg.ic.ssa.stimulus.StimulusReactInteraction;
+import org.esg.ic.ssa.stimulus.StimulusServiceAdapter;
+import org.esg.ic.ssa.stimulus.data.PercentValue;
 import org.openmuc.framework.config.ArgumentSyntaxException;
 import org.openmuc.framework.config.ChannelScanInfo;
 import org.openmuc.framework.config.ScanException;
 import org.openmuc.framework.data.Flag;
+import org.openmuc.framework.data.FloatValue;
 import org.openmuc.framework.data.Record;
 import org.openmuc.framework.driver.spi.ChannelRecordContainer;
 import org.openmuc.framework.driver.spi.ChannelValueContainer;
@@ -48,21 +49,21 @@ import org.openmuc.framework.driver.spi.RecordsReceivedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MeterServiceConnection extends MeterServiceAdapter implements Connection {
-    private static final Logger logger = LoggerFactory.getLogger(MeterServiceConnection.class);
+public class StimulusServiceConnection extends StimulusServiceAdapter implements Connection {
+    private static final Logger logger = LoggerFactory.getLogger(StimulusServiceConnection.class);
 
-    private final MeterReactInteraction interaction;
+    private final StimulusReactInteraction interaction;
 
-    private final List<Meteristener> listeners = new ArrayList<Meteristener>();
+    private final List<StimulusListener> listeners = new ArrayList<StimulusListener>();
 
     private RecordsReceivedListener listener;
 
 	private ExecutorService executor;
 
-    public MeterServiceConnection(GenericAdapter genericAdapter, ServiceAdapterSettings settings)
+    public StimulusServiceConnection(GenericAdapter genericAdapter, ServiceAdapterSettings settings)
             throws GenericAdapterException {
         super(genericAdapter, settings);
-        this.executor = Executors.newCachedThreadPool(new MeterListenerThreadFactory());
+        this.executor = Executors.newCachedThreadPool(new StimulusListenerThreadFactory());
         this.interaction = registerReactKnowledgeInteraction();
     }
 
@@ -76,16 +77,16 @@ public class MeterServiceConnection extends MeterServiceAdapter implements Conne
     public void startListening(List<ChannelRecordContainer> containers, RecordsReceivedListener recordListener)
             throws UnsupportedOperationException, ConnectionException {
 
-        listeners.stream().forEach(l -> l.cancel());
+        listeners.stream().forEach(l -> l.stop());
         listeners.clear();
         listener = recordListener;
         
         for (ChannelRecordContainer container : containers) {
             String nodeId = container.getChannelAddress();
             
-            Meteristener listener = listeners.stream().filter(l -> l.nodeId.equals(nodeId)).findFirst().orElse(null);
+            StimulusListener listener = listeners.stream().filter(l -> l.nodeId.equals(nodeId)).findFirst().orElse(null);
             if (listener == null) {
-                listener = new Meteristener(nodeId);
+                listener = new StimulusListener(nodeId);
                 listeners.add(listener);
             }
             listener.containers.add(container);
@@ -108,10 +109,9 @@ public class MeterServiceConnection extends MeterServiceAdapter implements Conne
 
     private Record listenForRecord(String nodeId) {
         try {
-            List<FloatValue> values = interaction.react();
-            
+            List<PercentValue> values = interaction.react();
             if (values.size() > 0) {
-                for (FloatValue value : values) {
+                for (PercentValue value : values) {
                     if (!value.getNode().equals(nodeId)) {
                         continue;
                     }
@@ -120,7 +120,7 @@ public class MeterServiceConnection extends MeterServiceAdapter implements Conne
                             String.format(Locale.US, "%.3f", value.getValue()));
                     
                     return new Record(
-                            new org.openmuc.framework.data.FloatValue(value.getValue()), 
+                            new FloatValue(value.getValue()), 
                             value.getTimestamp().toInstant().toEpochMilli(), 
                             Flag.VALID);
                 }
@@ -132,19 +132,19 @@ public class MeterServiceConnection extends MeterServiceAdapter implements Conne
             
         } catch (GenericAdapterException e) {
             logger.warn("Error while listening for react of node: {}.", nodeId, e);
-            listener.connectionInterrupted(MeterDriver.ID, this);
+            listener.connectionInterrupted(StimulusDriver.ID, this);
         }
         return new Record(Flag.DRIVER_ERROR_READ_FAILURE);
     }
 
     @Override
     public void disconnect() {
-      try {
-            listeners.stream().forEach(l -> l.cancel());
+        try {
+            listeners.stream().forEach(l -> l.stop());
             listeners.clear();
 
     		executor.shutdown();
-
+    		
             close();
             
         } catch (GenericAdapterException e) {
@@ -152,7 +152,7 @@ public class MeterServiceConnection extends MeterServiceAdapter implements Conne
         }
     }
 
-    public class Meteristener implements Runnable {
+    public class StimulusListener implements Runnable {
 
         final List<ChannelRecordContainer> containers;
 
@@ -160,20 +160,18 @@ public class MeterServiceConnection extends MeterServiceAdapter implements Conne
 
         private boolean running = false;
 
-        public Meteristener(String nodeId) {
+        public StimulusListener(String nodeId) {
             this.containers = new ArrayList<ChannelRecordContainer>();
             this.nodeId = nodeId;
         }
 
-        public void cancel() {
+        public void stop() {
             running = false;
         }
 
         @Override
         public void run() {
-            logger.debug("Starting SSA React Listener for {} channels of node: {}", containers.size(), nodeId);
-            
-            running = true;
+            this.running = true;
             while (running) {
                 Record record = listenForRecord(nodeId);
                 if (record != null) {
@@ -186,13 +184,13 @@ public class MeterServiceConnection extends MeterServiceAdapter implements Conne
         }
     }
 
-	private class MeterListenerThreadFactory implements ThreadFactory {
+	private class StimulusListenerThreadFactory implements ThreadFactory {
 
 		@Override
 		public Thread newThread(Runnable r) {
-			String name = "EasySmartMetering SSA React Listener";
-			if (r instanceof Meteristener) {
-				name += " - " + ((Meteristener) r).nodeId;
+			String name = "EasySmartStimulus SSA React Listener";
+			if (r instanceof StimulusListener) {
+				name += " - " + ((StimulusListener) r).nodeId;
 			}
 			return new Thread(r, name);
 		}

@@ -36,19 +36,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
 public class GraphPrefixes extends PrefixMappingImpl implements PrefixMapping, Serializable {
-    private static final long serialVersionUID = -1576074109745380956L;
+	private static final long serialVersionUID = -9143207115640470914L;
 
-    private GraphPrefixes() {
+	private GraphPrefixes() {
     }
 
     @Override
-    public GraphPrefixes lock() { 
-        return (GraphPrefixes) super.lock();
+    public GraphPrefixes lock() {
+        super.lock();
+        return this;
+    }
+
+    @Override
+    public GraphPrefixes setNsPrefixes(PrefixMapping other) {
+    	super.setNsPrefixes(other);
+    	return this;
     }
 
     @Override
     public GraphPrefixes setNsPrefix(String prefix, String uri) {
-        return (GraphPrefixes) super.setNsPrefix(prefix, uri);
+        super.setNsPrefix(prefix, uri);
+        return this;
     }
 
     @Override
@@ -72,12 +80,12 @@ public class GraphPrefixes extends PrefixMappingImpl implements PrefixMapping, S
     public static class Factory {
         static { JenaSystem.init(); }
         public static GraphPrefixes create() { return new GraphPrefixes(); }
+        public static GraphPrefixes defaults() { return new GraphPrefixes().setNsPrefixes(DEFAULT); }
     }
-
-    public static final GraphPrefixes EMPTY = GraphPrefixes.Factory.create();
 
     public static final GraphPrefixes DEFAULT = GraphPrefixes.Factory.create()
             .setNsPrefix("saref", "https://saref.etsi.org/core/")
             .setNsPrefix("rdf",   RDF.getURI())
-            .setNsPrefix("xsd",   XSD.getURI());
+            .setNsPrefix("xsd",   XSD.getURI())
+            .lock();
 }

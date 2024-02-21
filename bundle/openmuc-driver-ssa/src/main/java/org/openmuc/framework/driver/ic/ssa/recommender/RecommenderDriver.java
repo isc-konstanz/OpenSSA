@@ -44,17 +44,17 @@ public class RecommenderDriver extends GenericDriver implements DriverService {
     private GenericService genericAdapterService;
 
     public RecommenderDriver() throws GenericAdapterException {
-		super(RecommenderServiceAdapter.class, "service.properties");
-	}
+        super(RecommenderServiceAdapter.class, "service.properties");
+    }
 
-	@Override
-	protected String getId() {
-		return ID;
-	}
+    @Override
+    protected String getId() {
+        return ID;
+    }
 
     @Override
     public DriverInfo getInfo() {
-    	String description = defaultsProperties.getProperty(ServiceAdapterSettings.KNOWLEDGE_BASE_DESCRIPTION);
+        String description = defaultsProperties.getProperty(ServiceAdapterSettings.KNOWLEDGE_BASE_DESCRIPTION);
         String addressSyntax = "<knowledgeBaseId>";
         String settingsSyntax = "Not needed";
         String scanSettingsSyntax = "Not supported";
@@ -67,11 +67,11 @@ public class RecommenderDriver extends GenericDriver implements DriverService {
     public Connection connect(String address, String settings)
             throws ArgumentSyntaxException, ConnectionException {
         try {
-			return new RecommenderServiceConnection((GenericAdapter) genericAdapterService, createSettings(address));
-			
-		} catch (GenericAdapterException e) {
-			throw new ConnectionException(e);
-		}
+            return new RecommenderServiceConnection((GenericAdapter) genericAdapterService, createSettings(address));
+            
+        } catch (GenericAdapterException e) {
+            throw new ConnectionException(e);
+        }
     }
 
 }

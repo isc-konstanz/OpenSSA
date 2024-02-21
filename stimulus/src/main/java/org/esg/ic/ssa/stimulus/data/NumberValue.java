@@ -38,13 +38,18 @@ public abstract class NumberValue extends TimeValue {
     @JsonDeserialize(using = SarefPrefixDeserializer.class)
     protected String quantity;
 
+    @JsonSerialize(using = SarefPrefixSerializer.class)
+    @JsonDeserialize(using = SarefPrefixDeserializer.class)
     protected String stimulus;
+
+    protected String unit;
 
     protected NumberValue(String node, ValueType type, ZonedDateTime timestamp) {
         super(node, timestamp);
         this.data = node;
         this.quantity = type.name().toLowerCase();
         this.stimulus = type.name().toLowerCase();
+        this.unit = type.getUnit();
     }
 
     protected NumberValue() {
@@ -73,6 +78,14 @@ public abstract class NumberValue extends TimeValue {
 
 	public void setStimulus(String stimulus) {
 		this.stimulus = stimulus;
+	}
+
+	public String getUnit() {
+		return unit;
+	}
+
+	public void setUnit(String unit) {
+		this.unit = unit;
 	}
 
 }

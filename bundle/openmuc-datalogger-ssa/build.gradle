@@ -27,6 +27,7 @@ project.ext {
 dependencies {
     implementation project(':openmuc-lib-ssa')
     implementation project(':meter')
+    implementation project(':stimulus')
 }
 
 jar {

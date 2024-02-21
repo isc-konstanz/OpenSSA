@@ -44,7 +44,7 @@ dependencies {
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: apacheHttpVersion
 
     embed group: 'org.apache.httpcomponents', name: 'httpclient', version: apacheHttpVersion
-    //embed group: 'org.apache.jena', name: 'apache-jena-libs', version: apacheJenaVersion
+    embed group: 'org.apache.jena', name: 'apache-jena-libs', version: apacheJenaVersion
 }
 
 def embed = configurations.embed.findAll {
@@ -58,7 +58,7 @@ jar {
     bnd('Bundle-Name':        projectFullName,
         'Bundle-Description': projectDescription,
         'Bundle-ClassPath':   '.,' + embed.collect { 'libs/'+it.getName() }.join(','),
-        'Import-Package':     'org.slf4j.*,com.fasterxml.jackson.*,javax.*,org.w3c.*,org.xml.*,org.apache.jena.*',
+        'Import-Package':     'org.slf4j.*,com.fasterxml.jackson.*,javax.*,org.w3c.*,org.xml.*',
         'Export-Package':     'org.esg.ic.ssa.*')
 }
 

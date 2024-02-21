@@ -16,8 +16,11 @@ def openmucVersion = '0.19.2'
 dependencies {
     osgibundles project(':core')
     osgibundles project(':meter')
+    osgibundles project(':stimulus')
+    osgibundles project(':recommender')
 
     osgibundles project(':openmuc-lib-ssa')
+    osgibundles project(':openmuc-driver-ssa')
     osgibundles project(':openmuc-datalogger-ssa')
 
     //------------------------------------------------------------------------------------------------------

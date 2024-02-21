@@ -69,7 +69,7 @@ public class PercentValue extends NumberValue {
                 throws IOException, JsonProcessingException {
         	StringBuilder jsonBuilder = new StringBuilder();
         	jsonBuilder.append('<');
-        	jsonBuilder.append(String.format(Locale.US, "%.3f", value));
+        	jsonBuilder.append(String.format(Locale.US, "%.2f", value));
         	jsonBuilder.append('>');
             generator.writeString(jsonBuilder.toString());
         }

@@ -43,41 +43,42 @@ import ch.qos.logback.classic.LoggerContext;
 
 public class RecommenderServiceAdapter extends ServiceAdapter {
 
-	static final String GRAPH_PATTERN = "recommender.gp";
+    static final String GRAPH_PATTERN = "recommender.gp";
 
-    protected GraphPrefixes graphPrefixes = GraphPrefixes.EMPTY
-			.setNsPrefix("dc",      "http://purl.org/dc/elements/1.1/")
-	        .setNsPrefix("gn",      "https://www.geonames.org/ontology#")
-	        .setNsPrefix("s4ener",  "https://saref.etsi.org/saref4ener/")
-	        .setNsPrefix("ic-data", "http://ontology.tno.nl/interconnect/datapoint#")
+    static final GraphPrefixes GRAPH_PREFIXES = GraphPrefixes.Factory.create()
+            .setNsPrefix("dc",      "http://purl.org/dc/elements/1.1/")
+            .setNsPrefix("gn",      "https://www.geonames.org/ontology#")
+            .setNsPrefix("s4ener",  "https://saref.etsi.org/saref4ener/")
+            .setNsPrefix("ic-data", "http://ontology.tno.nl/interconnect/datapoint#")
             .setNsPrefix("time",    "http://www.w3.org/2006/time#")
             .setNsPrefix("saref",   "https://saref.etsi.org/corehasTime")
             .setNsPrefix("rdf",     "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
-	        .setNsPrefix("iso3166", "http://purl.org/dc/terms/ISO3166")
-            .setNsPrefix("xsd",     "http://www.w3.org/2001/XMLSchema#");
+            .setNsPrefix("iso3166", "http://purl.org/dc/terms/ISO3166")
+            .setNsPrefix("xsd",     "http://www.w3.org/2001/XMLSchema#")
+            .lock();
 
     protected final GraphPattern graphPattern;
 
     public RecommenderServiceAdapter(GenericAdapter genericAdapter, ServiceAdapterSettings settings)
-    		throws GenericAdapterException {
-		super(genericAdapter, settings);
-		this.graphPattern = new GraphPattern(graphPrefixes, getClass().getClassLoader().getResourceAsStream(GRAPH_PATTERN));
+            throws GenericAdapterException {
+        super(genericAdapter, settings);
+        this.graphPattern = new GraphPattern(GRAPH_PREFIXES, RecommenderServiceAdapter.class.getClassLoader().getResourceAsStream(GRAPH_PATTERN));
     }
 
     private RecommenderServiceAdapter(GenericAdapter genericAdapter)
-    		throws GenericAdapterException {
-		super(genericAdapter);
-		this.graphPattern = new GraphPattern(graphPrefixes, getClass().getClassLoader().getResourceAsStream(GRAPH_PATTERN));
-	}
+            throws GenericAdapterException {
+        super(genericAdapter);
+        this.graphPattern = new GraphPattern(GRAPH_PREFIXES, RecommenderServiceAdapter.class.getClassLoader().getResourceAsStream(GRAPH_PATTERN));
+    }
 
     private RecommenderServiceAdapter(GenericAdapter genericAdapter, Properties serviceProperties)
-    		throws GenericAdapterException {
-		super(genericAdapter, serviceProperties);
-		this.graphPattern = new GraphPattern(graphPrefixes, getClass().getClassLoader().getResourceAsStream(GRAPH_PATTERN));
-	}
+            throws GenericAdapterException {
+        super(genericAdapter, serviceProperties);
+        this.graphPattern = new GraphPattern(GRAPH_PREFIXES, RecommenderServiceAdapter.class.getClassLoader().getResourceAsStream(GRAPH_PATTERN));
+    }
 
     public RecommenderAskInteraction registerAskKnowledgeInteraction(String countryCode)
-    		throws GenericAdapterException {
+            throws GenericAdapterException {
         AskKnowledgeInteraction askKnowledgeInteraction = new AskKnowledgeInteraction(graphPattern);
 
         String knowledgeInteractionId = registerAskKnowledgeInteraction(askKnowledgeInteraction);
@@ -100,25 +101,25 @@ public class RecommenderServiceAdapter extends ServiceAdapter {
 
         GenericAdapter genericAdapter = new GenericAdapter("<username>", "<password>");
         try {
-        	genericAdapter.login();
+            genericAdapter.login();
 
             String countryCode = "DE";
 
             try (RecommenderServiceAdapter service = RecommenderServiceAdapter.registerAsking(genericAdapter)) {
-            	RecommenderAskInteraction interaction = service.registerAskKnowledgeInteraction(countryCode);
-            	
-            	ZoneId timezone = ZoneId.of("CET");
-            	ZonedDateTime startDateTime = ZonedDateTime.now(timezone).truncatedTo(ChronoUnit.DAYS);
-            	ZonedDateTime endDateTime = startDateTime.plusDays(1).minusHours(1);
-            	
-                List<Recommendation> recommendation = interaction.ask(startDateTime, endDateTime);
+                RecommenderAskInteraction interaction = service.registerAskKnowledgeInteraction(countryCode);
                 
-                logger.info("Received {} recommendations" + (recommendation.size() > 0 ? ": \n{}" : ""), 
-                		recommendation.size(), 
-                		recommendation.stream().map(r -> r.toString()).collect(Collectors.joining(", \n")));
+                ZoneId timezone = ZoneId.of("CET");
+                ZonedDateTime startDateTime = currentDateTime.truncatedTo(ChronoUnit.DAYS);
+                ZonedDateTime endDateTime = startDateTime.plusDays(1).minusHours(1);
+                
+                List<Recommendation> recommendations = interaction.ask(startDateTime, endDateTime);
+                
+                logger.info("Received {} recommendations" + (recommendations.size() > 0 ? ": \n{}" : ""), 
+                        recommendations.size(), 
+                        recommendations.stream().map(r -> r.toString()).collect(Collectors.joining(", \n")));
             }
         } catch (GenericAdapterException e) {
-        	logger.error("Error demonstrating recommender service: {}", e.getMessage());
+            logger.error("Error demonstrating recommender service: {}", e.getMessage());
         }
     }
 }

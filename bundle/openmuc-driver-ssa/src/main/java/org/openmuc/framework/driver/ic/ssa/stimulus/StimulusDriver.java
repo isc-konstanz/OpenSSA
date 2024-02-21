@@ -18,11 +18,11 @@
  * along with OpenMUC.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package org.openmuc.framework.driver.ic.ssa.meter;
+package org.openmuc.framework.driver.ic.ssa.stimulus;
 
 import org.esg.ic.ssa.GenericAdapter;
 import org.esg.ic.ssa.GenericAdapterException;
-import org.esg.ic.ssa.meter.MeterServiceAdapter;
+import org.esg.ic.ssa.stimulus.StimulusServiceAdapter;
 import org.openmuc.framework.config.ArgumentSyntaxException;
 import org.openmuc.framework.driver.ic.ssa.GenericDriver;
 import org.openmuc.framework.driver.spi.Connection;
@@ -34,15 +34,15 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 
 @Component
-public class MeterDriver extends GenericDriver implements DriverService {
+public class StimulusDriver extends GenericDriver implements DriverService {
 
-    static final String ID = "ic-ssa-meter";
+    static final String ID = "ic-ssa-stimulus";
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY)
     private GenericService genericAdapterService;
 
-    public MeterDriver() throws GenericAdapterException {
-        super(MeterServiceAdapter.class, "react.properties");
+    public StimulusDriver() throws GenericAdapterException {
+        super(StimulusServiceAdapter.class, "react.properties");
     }
 
     @Override
@@ -54,7 +54,7 @@ public class MeterDriver extends GenericDriver implements DriverService {
     public Connection connect(String address, String settings)
             throws ArgumentSyntaxException, ConnectionException {
         try {
-            return new MeterServiceConnection((GenericAdapter) genericAdapterService, createSettings(address));
+            return new StimulusServiceConnection((GenericAdapter) genericAdapterService, createSettings(address));
             
         } catch (GenericAdapterException e) {
             throw new ConnectionException(e);

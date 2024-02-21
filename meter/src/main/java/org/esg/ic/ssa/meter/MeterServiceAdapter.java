@@ -48,19 +48,19 @@ public class MeterServiceAdapter extends ServiceAdapter {
     public MeterServiceAdapter(GenericAdapter genericAdapter, ServiceAdapterSettings settings)
     		throws GenericAdapterException {
 		super(genericAdapter, settings);
-		this.graphPattern = new GraphPattern(getClass().getClassLoader().getResourceAsStream(GRAPH_PATTERN));
+		this.graphPattern = new GraphPattern(MeterServiceAdapter.class.getClassLoader().getResourceAsStream(GRAPH_PATTERN));
 	}
 
     private MeterServiceAdapter(GenericAdapter genericAdapter, String servicePropertiesFile)
     		throws GenericAdapterException {
 		super(genericAdapter, servicePropertiesFile);
-		this.graphPattern = new GraphPattern(getClass().getClassLoader().getResourceAsStream(GRAPH_PATTERN));
+		this.graphPattern = new GraphPattern(MeterServiceAdapter.class.getClassLoader().getResourceAsStream(GRAPH_PATTERN));
 	}
 
     private MeterServiceAdapter(GenericAdapter genericAdapter, Properties serviceProperties)
     		throws GenericAdapterException {
 		super(genericAdapter, serviceProperties);
-		this.graphPattern = new GraphPattern(getClass().getClassLoader().getResourceAsStream(GRAPH_PATTERN));
+		this.graphPattern = new GraphPattern(MeterServiceAdapter.class.getClassLoader().getResourceAsStream(GRAPH_PATTERN));
 	}
 
     public MeterReactInteraction registerReactKnowledgeInteraction()

@@ -23,6 +23,7 @@ package org.openmuc.framework.datalogger.ic.ssa;
 import org.esg.ic.ssa.GenericAdapter;
 import org.esg.ic.ssa.GenericAdapterException;
 import org.openmuc.framework.datalogger.ic.ssa.meter.MeterLogger;
+import org.openmuc.framework.datalogger.ic.ssa.stimulus.StimulusLogger;
 import org.openmuc.framework.datalogger.spi.DataLoggerService;
 import org.openmuc.framework.ic.GenericService;
 import org.openmuc.framework.lib.osgi.deployment.RegistrationHandler;
@@ -47,15 +48,18 @@ public class LoggingServiceComponent {
     private RegistrationHandler registrationHandler;
 
     private MeterLogger meterLogger;
+    private StimulusLogger stimulusLogger;
 
     @Activate
     protected void activate(BundleContext context) throws GenericAdapterException {
         logger.info("Activating InterConnect Logging Service Adapter");
         
         meterLogger = new MeterLogger((GenericAdapter) genericAdapterService);
+        stimulusLogger = new StimulusLogger((GenericAdapter) genericAdapterService);
         
         registrationHandler = new RegistrationHandler(context);
         registerDataLogger(meterLogger);
+        registerDataLogger(stimulusLogger);
     }
 
     protected void registerDataLogger(LoggingServiceAdapter logger) {

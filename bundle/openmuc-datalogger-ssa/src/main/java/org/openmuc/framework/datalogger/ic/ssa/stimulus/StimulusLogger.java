@@ -18,7 +18,7 @@
  * along with OpenMUC.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package org.openmuc.framework.datalogger.ic.ssa.meter;
+package org.openmuc.framework.datalogger.ic.ssa.stimulus;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -32,9 +32,8 @@ import java.util.stream.Collectors;
 import org.esg.ic.ssa.GenericAdapter;
 import org.esg.ic.ssa.GenericAdapterException;
 import org.esg.ic.ssa.ServiceAdapterSettings;
-import org.esg.ic.ssa.meter.MeterPostInteraction;
-import org.esg.ic.ssa.meter.MeterServiceAdapter;
-import org.esg.ic.ssa.meter.data.ValueType;
+import org.esg.ic.ssa.stimulus.StimulusPostInteraction;
+import org.esg.ic.ssa.stimulus.StimulusServiceAdapter;
 import org.openmuc.framework.data.Flag;
 import org.openmuc.framework.data.Record;
 import org.openmuc.framework.datalogger.ic.ssa.LoggingServiceAdapter;
@@ -45,17 +44,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class MeterLogger extends LoggingServiceAdapter {
-    private static final Logger logger = LoggerFactory.getLogger(MeterLogger.class);
+public class StimulusLogger extends LoggingServiceAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(StimulusLogger.class);
 
-    static final String ID = "ic-ssa-meter";
+    static final String ID = "ic-ssa-stimulus";
 
-    private MeterServiceAdapter serviceAdapter;
+    private StimulusServiceAdapter serviceAdapter;
 
-    private Map<String, MeterPostInteraction> nodeInteractions = new HashMap<String, MeterPostInteraction>();
+    private Map<String, StimulusPostInteraction> nodeInteractions = new HashMap<String, StimulusPostInteraction>();
 
-    public MeterLogger(GenericAdapter genericAdapter) throws GenericAdapterException {
-        super(genericAdapter, ServiceSpecificPropertySettings.ofResource(MeterServiceAdapter.class, "post.properties"));
+    public StimulusLogger(GenericAdapter genericAdapter) throws GenericAdapterException {
+        super(genericAdapter, ServiceSpecificPropertySettings.ofResource(StimulusServiceAdapter.class, "post.properties"));
     }
 
     @Override
@@ -67,22 +66,22 @@ public class MeterLogger extends LoggingServiceAdapter {
     	return serviceAdapter != null;
     }
 
-    public MeterServiceAdapter getAdapter() {
+    public StimulusServiceAdapter getAdapter() {
     	return serviceAdapter;
     }
 
-    @Override
+	@Override
     protected void register(GenericAdapter adapter, ServiceAdapterSettings settings) throws GenericAdapterException {
-        logger.info("Registering Meter Server Adapter");
+        logger.info("Registering Stimulus Server Adapter");
         
-        serviceAdapter = new MeterServiceAdapter(adapter, settings);
+        serviceAdapter = new StimulusServiceAdapter(adapter, settings);
         configure(channelSettings.values());
     }
 
     @Override
     public void deregister() throws GenericAdapterException {
         if (hasAdapter()) {
-            logger.info("Unregistering Meter Server Adapter");
+            logger.info("Unregistering Stimulus Server Adapter");
             
             serviceAdapter.close();
             serviceAdapter = null;
@@ -96,7 +95,7 @@ public class MeterLogger extends LoggingServiceAdapter {
     		return;
     	}
         List<String> nodes = channelSettings.stream().map(s -> s.getNode()).distinct().collect(Collectors.toList());
-        for (MeterPostInteraction nodeInteraction : nodeInteractions.values()) {
+        for (StimulusPostInteraction nodeInteraction : nodeInteractions.values()) {
             if (!nodes.contains(nodeInteraction.getNode())) {
                 nodeInteractions.remove(nodeInteraction.getNode());
             }
@@ -105,7 +104,7 @@ public class MeterLogger extends LoggingServiceAdapter {
             try {
                 String node = settings.getNode();
                 if (!nodeInteractions.containsKey(node)) {
-                    nodeInteractions.put(node, getAdapter().registerPostKnowledgeInteraction(node, ValueType.POWER));
+                    nodeInteractions.put(node, getAdapter().registerPostKnowledgeInteraction(node));
                 }
             } catch (GenericAdapterException e) {
                 logger.warn("Error registering Post Knowledge Interaction: {}", e.getMessage());
@@ -128,24 +127,24 @@ public class MeterLogger extends LoggingServiceAdapter {
             }
             try {
             	// TODO: Make scaling configurable
-                float value = record.getValue().asFloat() / 1000f;
+                float value = record.getValue().asFloat() * 100f;
                 
                 ZonedDateTime dateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(record.getTimestamp()), ZoneOffset.UTC);
-                logger.debug("Posting node \"{}\" value {} at {}", settings.getNode(), record.getValue(), dateTime);
+                logger.debug("Posting node \"{}\" value {} at {}", settings.getNode(), value, dateTime);
                 
-                MeterPostInteraction meterPostInteraction = nodeInteractions.get(settings.getNode());
-                meterPostInteraction.post(dateTime, value);
+                StimulusPostInteraction stimulusPostInteraction = nodeInteractions.get(settings.getNode());
+                stimulusPostInteraction.post(dateTime, value);
                 
             } catch (GenericAdapterException e) {
                 logger.warn("Error posting node \"{}\" record: {}", settings.getNode(), record, e);
-                logger.debug("Reregistering Meter Server Adapter");
+                logger.debug("Reregistering Stimulus Server Adapter");
                 try {
 					serviceAdapter.close();
 	                serviceAdapter.register();
 	                configure(channelSettings.values());
 					
 				} catch (GenericAdapterException e1) {
-		            logger.warn("Error reregistering Meter Server Adapter: {}", e.getMessage());
+		            logger.warn("Error reregistering Stimulus Server Adapter: {}", e.getMessage());
 				}
             }
         }

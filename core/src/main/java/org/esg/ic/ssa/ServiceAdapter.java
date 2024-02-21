@@ -70,7 +70,7 @@ public abstract class ServiceAdapter implements AutoCloseable {
     		throws GenericAdapterException {
     	this.genericAdapter = genericAdapter;
     	this.settings = settings;
-    	this.createKnowledgeBase();
+    	this.register();
     }
 
     protected ServiceAdapter(GenericAdapter genericAdapter, Properties serviceProperties)
@@ -82,7 +82,7 @@ public abstract class ServiceAdapter implements AutoCloseable {
     		throws GenericAdapterException {
     	this.genericAdapter = genericAdapter;
     	this.settings = ServiceAdapterSettings.ofProperties(getClass(), servicePropertiesFilename);
-    	this.createKnowledgeBase();
+    	this.register();
     }
 
     public ServiceAdapter(GenericAdapter genericAdapter) throws GenericAdapterException {
@@ -129,6 +129,10 @@ public abstract class ServiceAdapter implements AutoCloseable {
         } catch (IOException e) {
             throw new GenericAdapterConnectionException(e);
         }
+    }
+
+	public void register() throws GenericAdapterException {
+        createKnowledgeBase();
     }
 
     @Override

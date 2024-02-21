@@ -61,6 +61,8 @@ public class RecommenderServiceConnection extends RecommenderServiceAdapter impl
         // TODO: Make configurable
         this.timezone = ZoneId.of("CET");
         this.countryCode = "DE";
+        
+        this.register();
     }
 
     @Override
@@ -88,28 +90,28 @@ public class RecommenderServiceConnection extends RecommenderServiceAdapter impl
             List<Recommendation> recommendations = interaction.ask(startDateTime, endDateTime);
             
             for (ChannelRecordContainer channelContainer : containers) {
-            	ZonedDateTime channelDateTime;
-            	if (channelContainer.getChannelAddress().isEmpty()) {
-            		channelDateTime = currentDateTime.truncatedTo(ChronoUnit.HOURS);
-            	}
-            	else {
-                	Integer hour = Integer.parseInt(channelContainer.getChannelAddress());
-                	channelDateTime = startDateTime.plusHours(hour);
-            	}
-            	try {
-                	Recommendation recommendation = recommendations.stream()
-                			.filter(r -> r.getDatetime().isEqual(channelDateTime))
-                			.findFirst().orElseThrow();
+                ZonedDateTime channelDateTime;
+                if (channelContainer.getChannelAddress().isEmpty()) {
+                    channelDateTime = currentDateTime.truncatedTo(ChronoUnit.HOURS);
+                }
+                else {
+                    Integer hour = Integer.parseInt(channelContainer.getChannelAddress());
+                    channelDateTime = startDateTime.plusHours(hour);
+                }
+                try {
+                    Recommendation recommendation = recommendations.stream()
+                            .filter(r -> r.getDatetime().isEqual(channelDateTime))
+                            .findFirst().orElseThrow();
 
-                	channelContainer.setRecord(decodeRecord(recommendation));
-                	
-            	} catch (NoSuchElementException e) {
-                	channelContainer.setRecord(new Record(Flag.DRIVER_ERROR_CHANNEL_TEMPORARILY_NOT_ACCESSIBLE));
+                    channelContainer.setRecord(decodeRecord(recommendation));
+                    
+                } catch (NoSuchElementException e) {
+                    channelContainer.setRecord(new Record(Flag.DRIVER_ERROR_CHANNEL_TEMPORARILY_NOT_ACCESSIBLE));
                 }
             }
         } catch (GenericAdapterException e) {
             for (ChannelRecordContainer channelContainer : containers) {
-            	channelContainer.setRecord(new Record(Flag.DRIVER_ERROR_READ_FAILURE));
+                channelContainer.setRecord(new Record(Flag.DRIVER_ERROR_READ_FAILURE));
             }
             throw new ConnectionException("Error during ask interaction with recommender service: " + e.getMessage());
         }
@@ -117,22 +119,22 @@ public class RecommenderServiceConnection extends RecommenderServiceAdapter impl
     }
 
     private Record decodeRecord(Recommendation recommendation) {
-    	if (recommendation.getRiskLevel() == null || 
-    			recommendation.getRiskEvaluation() == RiskEvaluation.NOT_AVAILABLE) {
-    		return new Record(Flag.DRIVER_ERROR_CHANNEL_TEMPORARILY_NOT_ACCESSIBLE);
-    	}
-    	int riskLevel = recommendation.getRiskLevel().getLevel();
-    	
-    	if (recommendation.getRiskEvaluation() == RiskEvaluation.HEALTHY && riskLevel != 0) {
-    		logger.warn("Inconsistend recommendation risk level received for \"{}\" evaluation: {}",
-    				recommendation.getRiskEvaluation(), riskLevel);
-    		
-    		return new Record(Flag.DRIVER_ERROR_READ_FAILURE);
-    	}
-    	if (recommendation.getRiskEvaluation() == RiskEvaluation.DECREASE) {
-    		riskLevel *= -1;
-    	}
-    	return new Record(new IntValue(riskLevel), System.currentTimeMillis(), Flag.VALID);
+        if (recommendation.getRiskLevel() == null || 
+                recommendation.getRiskEvaluation() == RiskEvaluation.NOT_AVAILABLE) {
+            return new Record(Flag.DRIVER_ERROR_CHANNEL_TEMPORARILY_NOT_ACCESSIBLE);
+        }
+        int riskLevel = recommendation.getRiskLevel().getLevel();
+        
+        if (recommendation.getRiskEvaluation() == RiskEvaluation.HEALTHY && riskLevel != 0) {
+            logger.warn("Inconsistend or invalid recommendation received at {} for \"{}\": {}",
+                    recommendation.getDatetime(), recommendation.getRiskEvaluation(), recommendation.getRiskLevel());
+            
+            return new Record(Flag.DRIVER_ERROR_READ_FAILURE);
+        }
+        if (recommendation.getRiskEvaluation() == RiskEvaluation.DECREASE) {
+            riskLevel *= -1;
+        }
+        return new Record(new IntValue(riskLevel), System.currentTimeMillis(), Flag.VALID);
     }
 
     @Override
